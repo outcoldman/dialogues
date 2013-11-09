@@ -300,8 +300,8 @@
           var bottom = form[0].getBoundingClientRect().bottom; 
           var windowHeight = $(window).height();
           if (bottom > windowHeight) {
-            $("html, body").animate({
-              scrollTop: bottom - windowHeight
+            $("body").animate({
+              scrollTop: $("body").scrollTop() + (bottom - windowHeight)
             }, 500);
           }
           $(formRender.selectors.body, form).focus();
