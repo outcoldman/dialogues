@@ -2,6 +2,8 @@
 
   if (!$) throw new Error('jQuery is not loaded!');
 
+  var supportStorage = typeof(Storage)!=="undefined";
+
   var defaultDateFormatter = function(date) {
     var d = new Date();
     d.setTime(date + d.getTimezoneOffset() * 60);
@@ -36,8 +38,14 @@
     return true;
   }
 
+  var getDocumentUrl = function() {
+    var url = document.location;
+    return url.href.substr(0, url.href.length - url.hash.length);
+  }
+
   var module = {};
   var defaultOptions = {
+    id: getDocumentUrl(),
     server: '/api/comments/', // url to commentaries
     debug: false, // enable additional logging
     load: { // loading settings
@@ -186,6 +194,7 @@
     this._options = options;
     this._load = options.load;
     this._render = options.render;
+
     /*
      * Render comment and append element to main element this.el
     */ 
@@ -223,9 +232,8 @@
 
       if (selectors.commentLink && comment.id) {
         var sectionId = 'comment_' + comment.id;
-        var url = document.location;
         $(selectors.commentLink, commentSection).attr({
-          href: url.href.substr(0, url.href.length - url.hash.length) + '#' + sectionId
+          href: getDocumentUrl() + '#' + sectionId
         });
         commentSection.attr({ id: sectionId });
       }
@@ -243,11 +251,25 @@
       var placeholder = $(formRender.templatePlaceholder);
       var form = $(this._options.formRender.template).hide();
 
-      if (formRender.selectors.preview) {
-        var preview = $(formRender.selectors.preview, form);
-        $(formRender.selectors.body, form).on('input', function() {
-          preview.html(bodyFormatter($(this).val()));
-        });
+      $(formRender.selectors.body, form).on('input', function() {
+        if (formRender.selectors.preview) {
+          $(formRender.selectors.preview, form).html(bodyFormatter($(this).val()));
+        }
+        if (supportStorage) {
+          if ($(this).val()) {
+            window.localStorage.setItem(commentStorageId, $(this).val());
+          } else {
+            window.localStorage.removeItem(commentStorageId);
+          }
+        }
+      });
+
+      var commentStorageId = this._options.id + '_comment_body';
+      if (supportStorage) {
+        var commentBody = window.localStorage.getItem(commentStorageId);
+        if (commentBody) {
+           $(formRender.selectors.body, form).val(commentBody).trigger('input');
+        }
       }
 
       // Story user data in cookie, so user will not need to reenter it every time
@@ -290,6 +312,7 @@
         .click(function() {
           form.hide();
           placeholder.fadeIn();
+          $(formRender.selectors.body, form).val('').trigger('input');
           return false;
         }.bind(this));
 
@@ -310,6 +333,7 @@
               placeholder.fadeIn();
               comment = merge(comment, result);
               renderComment(comment);
+              $(formRender.selectors.body, form).val('').trigger('input');
             }.bind(this))
             .fail(function(req, error, status) {
               if (this._options.debug) {
