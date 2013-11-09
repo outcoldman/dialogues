@@ -17,7 +17,6 @@
       delay: true // true if you want to load comments only when they will be visible on page.
     },
     render: {
-      commentRenderer: null,
       dateFormatter: defaultDateFormatter,
       template: 
 '<section class="comment">\
@@ -41,6 +40,58 @@
         date: 'span.date',
         body: 'div.comment-body',
         commentLink: 'a.comment-link' 
+      }
+    },
+    formRender: {
+      templatePlaceholder:
+'<div style="text-align: center;">\
+  <a href class="btn btn-primary btn-lg" style="width:80%;">Leave commentary</button>\
+</div>',
+      placeholderSelectors: {
+        button: 'a'
+      },
+      template: 
+'<form role="form">\
+  <div class="row">\
+    <div class="col-md-4">\
+      <div class="form-group">\
+        <label for="comment-name">Display name:</label>\
+        <input type="password" class="form-control" id="comment-name" placeholder="Enter display name">\
+      </div>\
+      <div class="form-group">\
+        <label for="comment-email">Email:</label>\
+        <input type="email" class="form-control" id="comment-email" placeholder="Enter email">\
+      </div>\
+      <div class="form-group">\
+        <label for="comment-website">Website:</label>\
+        <input type="email" class="form-control" id="comment-website" placeholder="Enter website">\
+      </div>\
+      <div class="checkbox">\
+        <label>\
+          <input type="checkbox" id="comment-nofification"> Notify about new comments\
+        </label>\
+      </div>\
+    </div>\
+    <div class="col-md-8">\
+      <div class="form-group">\
+        <label for="comment-body">Body:</label>\
+        <textarea class="form-control" rows="10" id="comment-body" autofocus="true"></textarea>\
+      </div>\
+    </div>\
+  </div>\
+  <div class="form-actions">\
+    <button type="submit" class="btn btn-primary">Submit</button>\
+    <button type="button" class="btn btn-default">Cancel</button>\
+  </div>\
+</form>',
+      selectors: {
+        username: '#comment-name',
+        email: '#comment-email',
+        website: '#comment-website',
+        nofification: '#comment-nofification',
+        body: '#comment-body',
+        submit: 'button[type=submit]',
+        cancel: 'button[type=button]',
       }
     },
     resources: {
@@ -155,15 +206,53 @@
       this.$el.append(commentSection);
     }.bind(this);
 
+    var renderForm = function() {
+      var formRender = this._options.formRender;
+
+      var placeholder = $(formRender.templatePlaceholder);
+      var form = $(this._options.formRender.template).hide();
+
+      $(formRender.placeholderSelectors.button, placeholder)
+        .click(function() {
+          placeholder.hide();
+          form.fadeIn();
+          var bottom = form[0].getBoundingClientRect().bottom; 
+          var windowHeight = $(window).height();
+          if (bottom > windowHeight) {
+            $("html, body").animate({
+              scrollTop: bottom - windowHeight
+            }, 500);
+          }
+          $(formRender.selectors.body, form).focus();
+          return false;
+        }.bind(this));
+
+      $(formRender.selectors.cancel, form)
+        .click(function() {
+          form.hide();
+          placeholder.fadeIn();
+          return false;
+        }.bind(this));
+
+      this.$el.append(placeholder);
+      this.$el.append(form);
+        
+    }.bind(this);
+
     /*
      * Load commentaries from server
     */
     this.load = function() {
       $.get(this._options.server, function(data) {
+        this.$el.hide();
         var commentRenderer = typeof this._render === 'function' ? this._render : renderComment;
         for (var i = 0; i < data.length; i++) {
           commentRenderer(data[i], i, this.$el);
         }
+        if (this._options.formRender) {
+          renderForm();
+        }
+        this.$el.fadeIn();
       }.bind(this)).fail(function(req, error, status) {
         if (this._options.debug) {
           console.error('Cannot load comments from server, error: ' + error + ', response: ' + status);
