@@ -10,18 +10,33 @@
     <style>
       #comments {
         width: 100%;
+        padding: 10px 20px;
       }
 
-      #comments .comment {
-        width: 100%;
-      }
+        #comments .comment {
+          width: 100%;
+          min-height: 100px;
+        }
 
-      #comments .body {
-        width: 100%;
-        border: 1px solid black;
-        border-radius: 10px;
-        padding: 5px 10px;
-      }
+          #comments .comment .header {
+            margin-left: 100px;
+            margin-bottom: 10px;
+          }
+
+          #comments .comment img.avatar {
+            border-radius: 50%;
+            float: left;
+          }
+
+          #comments .comment .header a.userName {
+          }
+
+          #comments .comment .commentBody {
+            border: 1px solid black;
+            border-radius: 10px;
+            padding: 5px 10px;
+            margin-left: 100px;
+          }
     </style>
   </head>
   <body>

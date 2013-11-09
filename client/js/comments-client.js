@@ -11,13 +11,19 @@
       delay: true // true if you want to load comments only when they will be visible on page.
     },
     rendering: {
-      block: '<div class="comment" />', // which element type should be used for each comment block.
-      userName: '<div class="userName" />',
-      icon: '<img class="avatar" height=80 width=80 />',
-      date: '<div />',
-      dateClass: 'date',
-      body: '<div class="body" />',
-      userNameLink: '<a rel="nofollow" />'
+      template: 
+'<section class="comment">\
+  <img class="avatar" height=80 width=80 />\
+  <div class="header">\
+    <a class="userName" />\
+    <span class="date" />\
+  </div>\
+  <div class="commentBody" />\
+</section>',
+      userNameSelector: 'a.userName',
+      iconSelector: 'img.avatar',
+      dateSelector: 'span.date',
+      bodySelector: 'div.commentBody'
     },
     resources: {
       anonymous: 'Anonymous'
@@ -84,37 +90,30 @@
      * Render comment and append element to main element this.el
     */ 
     var renderComment = function(comment) {
-      var block = $(this.rendering.block)
+      var commentSection = $(this.rendering.template)
         .data('comment', comment);
 
       var name = comment.userName || this.options.resources.anonymous;
 
       if (comment.icon) {
-        $(this.rendering.icon)
+        $(this.rendering.iconSelector, commentSection)
           .attr({
             alt: name,
             src: comment.icon
-          })
-          .appendTo(block);
+          });
       }
 
-      var userName = $(this.rendering.userName);
+      var userName = $(this.rendering.userNameSelector, commentSection);
       if (comment.link) {
-        userName = $(this.rendering.userNameLink)
-          .attr({ href: comment.link })
-          .appendTo(userName);
+        userName.attr({ href: comment.link });
       }
 
-      userName
-        .text(name).
-        appendTo(block);
+      userName.text(name);
       
-      $(this.rendering.body)
-        .addClass(this.rendering.bodyClass)
-        .html(comment.body)
-        .appendTo(block);
+      $(this.rendering.bodySelector, commentSection)
+        .html(comment.body);
 
-      this.$el.append(block);
+      this.$el.append(commentSection);
     }.bind(this);
 
     /*
