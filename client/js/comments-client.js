@@ -2,6 +2,12 @@
 
   if (!$) throw new Error('jQuery is not loaded!');
 
+  var defaultDateFormatter = function(date) {
+    var d = new Date();
+    d.setTime(date + d.getTimezoneOffset());
+    return d.toLocaleString();
+  }
+
   var module = {};
   var defaultOptions = {
     server: '/api/comments/', // url to commentaries
@@ -11,19 +17,28 @@
       delay: true // true if you want to load comments only when they will be visible on page.
     },
     rendering: {
+      commentRenderer: null,
+      dateFormatter: defaultDateFormatter,
       template: 
 '<section class="comment">\
   <img class="avatar" height=80 width=80 />\
   <div class="header">\
-    <a class="userName" />\
-    <span class="date" />\
+    <div>\
+      <a class="userName" />\
+      <a class="comment-link">\
+        <span class="date" />\
+      </a>\
+    </div>\
   </div>\
   <div class="commentBody" />\
 </section>',
-      userNameSelector: 'a.userName',
-      iconSelector: 'img.avatar',
-      dateSelector: 'span.date',
-      bodySelector: 'div.commentBody'
+      selectors: {
+        userName: 'a.userName',
+        icon: 'img.avatar',
+        date: 'span.date',
+        body: 'div.commentBody',
+        commentLink: 'a.comment-link' 
+      }
     },
     resources: {
       anonymous: 'Anonymous'
@@ -90,27 +105,45 @@
      * Render comment and append element to main element this.el
     */ 
     var renderComment = function(comment) {
+      var selectors = this.options.rendering.selectors;
+
       var commentSection = $(this.rendering.template)
         .data('comment', comment);
 
       var name = comment.userName || this.options.resources.anonymous;
 
-      if (comment.icon) {
-        $(this.rendering.iconSelector, commentSection)
+      if (comment.icon && selectors.icon) {
+        $(selectors.icon, commentSection)
           .attr({
             alt: name,
             src: comment.icon
           });
       }
 
-      var userName = $(this.rendering.userNameSelector, commentSection);
+      var userName = $(selectors.userName, commentSection);
       if (comment.link) {
         userName.attr({ href: comment.link });
       }
-
       userName.text(name);
+
+      if(selectors.date && comment.date) {
+        var date = comment.date;
+        if (this.options.rendering.dateFormatter) {
+          date = this.options.rendering.dateFormatter(date);
+        }
+        $(selectors.date, commentSection).text(date);
+      }
+
+      if (selectors.commentLink && comment.id) {
+        var sectionId = 'comment_' + comment.id;
+        var url = document.location;
+        $(selectors.commentLink, commentSection).attr({
+          href: url.href.substr(0, url.href.length - url.hash.length) + '#' + sectionId
+        });
+        commentSection.attr({ id: sectionId });
+      }
       
-      $(this.rendering.bodySelector, commentSection)
+      $(selectors.body, commentSection)
         .html(comment.body);
 
       this.$el.append(commentSection);
@@ -122,7 +155,7 @@
     this.load = function() {
       $.get(this.options.server, function(data) {
         for (var i = 0; i < data.length; i++) {
-          renderComment(data[i]);
+          (this.options.rendering.commentRenderer || renderComment)(data[i], i, this.$el);
         }
       }.bind(this)).fail(function(req, error, status) {
         if (this.options.debug) {

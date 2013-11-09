@@ -16,6 +16,11 @@
         #comments .comment {
           width: 100%;
           min-height: 100px;
+          margin-bottom: 20px;
+        }
+
+        #comments .comment:last-child {
+          margin-bottom: 0px;
         }
 
           #comments .comment .header {
@@ -29,6 +34,23 @@
           }
 
           #comments .comment .header a.userName {
+            font-size:large;
+          }
+
+          #comments .comment .header a.comment-link {
+            color: black;
+            opacity: .5;
+            font-size: small;
+          }
+
+          #comments .comment .header a.comment-link:hover {
+            text-decoration: none;
+          }
+
+          #comments .comment .header a.comment-link:before {
+            content: "#";
+            margin-right: 5px;
+            margin-left: 5px;
           }
 
           #comments .comment .commentBody {
