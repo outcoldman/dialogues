@@ -21,7 +21,9 @@ function staticResourceHandler(responce, resource, contentType) {
 }
 
 http.createServer(function (req, res) {
-  console.log(req.url);
+  if (!isProduction) {
+    console.log('Handling request: ' + req.url);
+  }
   if (req.url === '/api/comments/') {
     comments.httpHandle(req, res);
   } else if (req.url === '/scripts/comments.js') {

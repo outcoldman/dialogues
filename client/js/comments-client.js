@@ -13,9 +13,7 @@
     rendering: {
       block: '<div class="comment" />', // which element type should be used for each comment block.
       userName: '<div class="userName" />',
-      imageClass: 'avatar',
-      imageHeight: 80,
-      imageWidth: 80,
+      icon: '<img class="avatar" height=80 width=80 />',
       date: '<div />',
       dateClass: 'date',
       body: '<div class="body" />',
@@ -86,7 +84,19 @@
      * Render comment and append element to main element this.el
     */ 
     var renderComment = function(comment) {
-      var block = $(this.rendering.block);
+      var block = $(this.rendering.block)
+        .data('comment', comment);
+
+      var name = comment.userName || this.options.resources.anonymous;
+
+      if (comment.icon) {
+        $(this.rendering.icon)
+          .attr({
+            alt: name,
+            src: comment.icon
+          })
+          .appendTo(block);
+      }
 
       var userName = $(this.rendering.userName);
       if (comment.link) {
@@ -95,14 +105,14 @@
           .appendTo(userName);
       }
 
-      userName.text(comment.userName || this.options.resources.anonymous);
+      userName
+        .text(name).
+        appendTo(block);
       
-      var commentBody = $(this.rendering.body)
+      $(this.rendering.body)
         .addClass(this.rendering.bodyClass)
-        .html(comment.body);
-
-      block.append(userName);
-      block.append(commentBody);
+        .html(comment.body)
+        .appendTo(block);
 
       this.$el.append(block);
     }.bind(this);
