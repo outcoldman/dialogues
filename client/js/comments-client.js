@@ -54,21 +54,24 @@
     },
     render: {
       dateFormatter: defaultDateFormatter,
+      templateContainer: '<ul class="comments-container" />',
       template: 
-'<section class="comment">\
-  <a class="website" >\
-    <img class="avatar" height=80 width=80 />\
-  </a>\
-  <div class="header">\
-    <div>\
-      <a class="name website" />\
-      <a class="comment-link">\
-        <span class="date" />\
-      </a>\
+'<li>\
+  <section class="comment">\
+    <a class="website" >\
+      <img class="avatar" height=80 width=80 />\
+    </a>\
+    <div class="header">\
+      <div>\
+        <a class="name website" />\
+        <a class="comment-link">\
+          <span class="date" />\
+        </a>\
+      </div>\
     </div>\
-  </div>\
-  <div class="comment-body" />\
-</section>',
+    <div class="comment-body" />\
+  </section>\
+</li>',
       selectors: {
         name: 'a.name', // 
         website: 'a.website', // 
@@ -190,15 +193,25 @@
   var CommentsInstance = function ($el, options) {
 
     this.$el = $el;
-    this._commentsContainer = $('<div />').appendTo($el);
     this._options = options;
     this._load = options.load;
     this._render = options.render;
 
+    var getCommentsContainer = function() {
+      return this._commentsContainer || (this._commentsContainer = $(this._render.templateContainer).appendTo($el));
+    }.bind(this);
+
+    var scrollToBottom = function() {
+      var container = getCommentsContainer();
+      if (container.get(0).scrollHeight > container.height()) {
+        container.animate({ scrollTop: container.get(0).scrollHeight }, "slow");
+      }
+    }.bind(this);
+
     /*
      * Render comment and append element to main element this.el
     */ 
-    var renderComment = function(comment) {
+    var renderComment = function(comment, index, container) {
       var selectors = this._render.selectors;
 
       var commentSection = $(this._render.template)
@@ -241,9 +254,12 @@
       $(selectors.body, commentSection)
         .html(this._options.bodyFormatter(comment.body));
 
-      this._commentsContainer.append(commentSection);
+      getCommentsContainer().append(commentSection);
     }.bind(this);
 
+    /*
+    * Render form under comments
+    */
     var renderForm = function() {
       var formRender = this._options.formRender;
       var bodyFormatter = this._options.bodyFormatter;
@@ -302,7 +318,7 @@
           if (bottom > windowHeight) {
             $("body").animate({
               scrollTop: $("body").scrollTop() + (bottom - windowHeight)
-            }, 500);
+            }, 'slow');
           }
           $(formRender.selectors.body, form).focus();
           return false;
@@ -334,6 +350,7 @@
               comment = merge(comment, result);
               renderComment(comment);
               $(formRender.selectors.body, form).val('').trigger('input');
+              scrollToBottom();
             }.bind(this))
             .fail(function(req, error, status) {
               if (this._options.debug) {
@@ -355,9 +372,8 @@
     this.load = function() {
       return $.getJSON(this._options.server, { id: this._options.id }, function(data) {
         this.$el.hide();
-        var commentRenderer = typeof this._render === 'function' ? this._render : renderComment;
         for (var i = 0; i < data.length; i++) {
-          commentRenderer(data[i], i, this._commentsContainer);
+          renderComment(data[i]);
         }
         if (this._options.formRender) {
           renderForm();
