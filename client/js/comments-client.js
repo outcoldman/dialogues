@@ -21,22 +21,25 @@
       dateFormatter: defaultDateFormatter,
       template: 
 '<section class="comment">\
-  <img class="avatar" height=80 width=80 />\
+  <a class="user-link" >\
+    <img class="avatar" height=80 width=80 />\
+  </a>\
   <div class="header">\
     <div>\
-      <a class="userName" />\
+      <a class="user-name user-link" />\
       <a class="comment-link">\
         <span class="date" />\
       </a>\
     </div>\
   </div>\
-  <div class="commentBody" />\
+  <div class="comment-body" />\
 </section>',
       selectors: {
-        userName: 'a.userName',
+        userName: 'a.user-name', // 
+        userLink: 'a.user-link', // 
         icon: 'img.avatar',
         date: 'span.date',
-        body: 'div.commentBody',
+        body: 'div.comment-body',
         commentLink: 'a.comment-link' 
       }
     },
@@ -119,12 +122,15 @@
             src: comment.icon
           });
       }
-
-      var userName = $(selectors.userName, commentSection);
+      
       if (comment.link) {
-        userName.attr({ href: comment.link });
+        $(selectors.userLink, commentSection).attr({ href: comment.link });
+      } else {
+        console.log('disabled');
+        $(selectors.userLink, commentSection).attr({ disabled: true });
       }
-      userName.text(name);
+
+      $(selectors.userName, commentSection).text(name);
 
       if(selectors.date && comment.date) {
         var date = comment.date;
