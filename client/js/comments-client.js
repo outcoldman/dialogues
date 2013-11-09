@@ -81,7 +81,7 @@
     formRender: {
       templatePlaceholder:
 '<div style="text-align: center;">\
-  <a href class="btn btn-primary btn-lg" style="width:80%;">Leave commentary</button>\
+  <a href class="btn btn-primary btn-lg" style="width:80%;">Reply</button>\
 </div>',
       placeholderSelectors: {
         button: 'a'
@@ -91,27 +91,27 @@
   <div class="row">\
     <div class="col-md-4">\
       <div class="form-group">\
-        <label for="comment-name">Display name:</label>\
-        <input type="text" class="form-control" id="comment-name" placeholder="Enter display name">\
+        <label for="comment-name-{id}">Display name:</label>\
+        <input type="text" class="form-control" name="comment-name" id="comment-name{-id}" placeholder="Enter display name">\
       </div>\
       <div class="form-group">\
-        <label for="comment-email">Email:</label>\
-        <input type="email" class="form-control" id="comment-email" placeholder="Enter email">\
+        <label for="comment-email-{id}">Email:</label>\
+        <input type="email" class="form-control" name="comment-email" id="comment-email-{id}" placeholder="Enter email">\
       </div>\
       <div class="form-group">\
-        <label for="comment-website">Website:</label>\
-        <input type="url" class="form-control" id="comment-website" placeholder="Enter website">\
+        <label for="comment-website-{id}">Website:</label>\
+        <input type="url" class="form-control" name="comment-website" id="comment-website-{id}" placeholder="Enter website">\
       </div>\
       <div class="checkbox">\
         <label>\
-          <input type="checkbox" id="comment-subscription"> Notify about new comments\
+          <input type="checkbox" name="comment-subscription" id="comment-subscription-{id}"> Notify about new comments\
         </label>\
       </div>\
     </div>\
     <div class="col-md-8">\
       <div class="form-group">\
-        <label for="comment-body">Body:</label>\
-        <textarea class="form-control" rows="10" id="comment-body" autofocus="true"></textarea>\
+        <label for="comment-body-{id}">Body:</label>\
+        <textarea class="form-control" rows="10" name="comment-body" id="comment-body-{id}" autofocus="true"></textarea>\
       </div>\
     </div>\
   </div>\
@@ -122,11 +122,11 @@
   </div>\
 </form>',
       selectors: {
-        username: '#comment-name',
-        email: '#comment-email',
-        website: '#comment-website',
-        subscription: '#comment-subscription',
-        body: '#comment-body',
+        username: 'input[name=comment-name]',
+        email: 'input[name=comment-email]',
+        website: 'input[name=comment-website]',
+        subscription: 'input[name=comment-subscription]',
+        body: 'textarea[name=comment-body]',
         submit: 'button[type=submit]',
         cancel: 'button[type=button]',
         preview: 'div.comment-preview'
@@ -249,7 +249,7 @@
       var bodyFormatter = this._options.bodyFormatter;
 
       var placeholder = $(formRender.templatePlaceholder);
-      var form = $(this._options.formRender.template).hide();
+      var form = $(this._options.formRender.template.replace(/{id}/g, this._options.id)).hide();
 
       $(formRender.selectors.body, form).on('input', function() {
         if (formRender.selectors.preview) {
@@ -353,7 +353,7 @@
      * Load commentaries from server
     */
     this.load = function() {
-      return $.get(this._options.server, function(data) {
+      return $.getJSON(this._options.server, { id: this._options.id }, function(data) {
         this.$el.hide();
         var commentRenderer = typeof this._render === 'function' ? this._render : renderComment;
         for (var i = 0; i < data.length; i++) {
@@ -373,7 +373,8 @@
     }.bind(this);
 
     this.add = function(comment) {
-      return $.post(this._options.server, JSON.stringify(comment), null, "json");
+      var data = JSON.stringify({ id: this._options.id, comment: comment });
+      return $.post(this._options.server, data, null, 'json');
     }.bind(this);
 
     if (this._load && !this._load.manual) {

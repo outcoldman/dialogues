@@ -6,6 +6,7 @@ var isProduction = (process.env.NODE_ENV === 'production');
 var http = require('http'),
     fs = require('fs'),
     path = require('path'),
+    url = require('url'),
     comments = require('./lib/comments');
 
 var port = (isProduction ? 80 : 8000);
@@ -24,7 +25,7 @@ http.createServer(function (req, res) {
   if (!isProduction) {
     console.log('Handling request: ' + req.url);
   }
-  if (req.url === '/api/comments/') {
+  if (url.parse(req.url).pathname === '/api/comments/') {
     comments.httpHandle(req, res);
   } else if (req.url === '/scripts/comments.js') {
     staticResourceHandler(res, './client/js/comments-client.js', 'text/javascript');

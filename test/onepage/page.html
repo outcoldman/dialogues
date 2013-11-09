@@ -12,80 +12,80 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js"></script>
     <script src="/scripts/comments.js"></script>
     <style>
-      #comments {
+      .comments {
         width: 100%;
         padding: 10px 20px;
       }
 
-        #comments .comment {
+        .comments .comment {
           width: 100%;
           min-height: 100px;
           margin-bottom: 20px;
         }
 
-        #comments .comment:last-child {
+        .comments .comment:last-child {
           margin-bottom: 0px;
         }
 
-          #comments .comment .header {
+          .comments .comment .header {
             margin-left: 100px;
             margin-bottom: 10px;
           }
 
-          #comments .comment img.avatar {
+          .comments .comment img.avatar {
             border-radius: 50%;
             float: left;
           }
 
-          #comments .comment .header a.name {
+          .comments .comment .header a.name {
             font-size:large;
           }
 
-          #comments .comment .header a.name[disabled] {
+          .comments .comment .header a.name[disabled] {
             color: #555;
           }
 
-          #comments .comment .header a.name[disabled]:hover {
+          .comments .comment .header a.name[disabled]:hover {
             text-decoration: none;
           }
 
-          #comments .comment .header a.comment-link {
+          .comments .comment .header a.comment-link {
             color: black;
             opacity: .5;
             font-size: small;
           }
 
-          #comments .comment .header a.comment-link:hover {
+          .comments .comment .header a.comment-link:hover {
             text-decoration: none;
           }
 
-          #comments .comment .header a.comment-link:before {
+          .comments .comment .header a.comment-link:before {
             content: "·";
             margin-right: 5px;
             margin-left: 5px;
           }
 
-          #comments .comment .comment-body {
+          .comments .comment .comment-body {
             border-bottom: 1px dashed #dbdbdb;
             padding: 5px 10px 20px 10px;
             margin-left: 100px;
           }
 
-          #comments form {
+          .comments form {
             margin-top: 20px;
           }
 
-          #comments div.comment-preview{
+          .comments div.comment-preview{
             border: 1px dashed #dbdbdb;
             padding: 10px 10px 10px 10px;
             margin: 5px 0px 10px 0px;
           }
 
-          #comments div.comment-preview:empty {
+          .comments div.comment-preview:empty {
             display: none;
           }
 
-          #comments .form-actions {
+          .comments .form-actions {
               margin: 0 0 0 0;
               background-color: transparent;
               text-align: right;
@@ -107,9 +107,9 @@
           Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
         </p>
       </article>
-      <div id="comments">
+      <div id="comments" class="comments">
       </div>
-            <article>
+      <article>
         <h1>Test article</h1>
         <p>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ac blandit felis, a facilisis nisi. Vestibulum mollis aliquet venenatis. Quisque pharetra nibh a eros fringilla elementum quis eu justo. Sed ipsum est, consectetur id sem vel, suscipit euismod elit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus dignissim quam nec libero semper tincidunt. Donec dignissim, tellus vel tincidunt rhoncus, odio turpis tincidunt ipsum, eget hendrerit orci lacus at nunc. Morbi volutpat felis ut rhoncus congue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec congue, libero eget tristique rhoncus, arcu eros tincidunt ante, ac interdum arcu lorem nec dui. Sed tempus ac magna ut consectetur. Sed eu dui a eros faucibus vestibulum. Sed eros erat, imperdiet hendrerit tincidunt ac, tincidunt quis lacus.
@@ -118,7 +118,9 @@
           Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
         </p>
       </article>
-            <article>
+      <div id="comments_2" class="comments">
+      </div>
+      <article>
         <h1>Test article</h1>
         <p>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ac blandit felis, a facilisis nisi. Vestibulum mollis aliquet venenatis. Quisque pharetra nibh a eros fringilla elementum quis eu justo. Sed ipsum est, consectetur id sem vel, suscipit euismod elit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus dignissim quam nec libero semper tincidunt. Donec dignissim, tellus vel tincidunt rhoncus, odio turpis tincidunt ipsum, eget hendrerit orci lacus at nunc. Morbi volutpat felis ut rhoncus congue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec congue, libero eget tristique rhoncus, arcu eros tincidunt ante, ac interdum arcu lorem nec dui. Sed tempus ac magna ut consectetur. Sed eu dui a eros faucibus vestibulum. Sed eros erat, imperdiet hendrerit tincidunt ac, tincidunt quis lacus.
@@ -139,8 +141,7 @@
     </div>
 
     <script type="text/javascript">
-      (function(){
-        "use strict";
+      (function(){"use strict";
 
         console.log(hljs.highlightAuto);
 
@@ -158,23 +159,38 @@
           sanitize: true
         });
 
-        var options = {
+        var customDateFormatter = function(date) {
+          return moment.unix(date + (new Date()).getTimezoneOffset()*60).fromNow();
+        };
+
+        var markdownBodyFormatter = function(text) {
+          return marked(text);
+        };
+        
+        comments.render('#comments', {
+          id: 'my_blog_1',
           server:'/api/comments/',
           debug: true,
           load: {
             delay: true
           },
           render: {
-            dateFormatter: function(date) {
-              return moment.unix(date + (new Date()).getTimezoneOffset()*60).fromNow();
-            }
+            dateFormatter: customDateFormatter
           },
-          bodyFormatter: function(text) {
-            return marked(text);
+          bodyFormatter: markdownBodyFormatter
+        });
+
+        comments.render('#comments_2', {
+          id: 'my_blog_2',
+          server:'/api/comments/',
+          debug: true,
+          load: {
+            delay: true
+          },
+          render: {
+            dateFormatter: customDateFormatter
           }
-        };
-        
-        comments.render('#comments', options);
+        });
       })();
     </script>
 
