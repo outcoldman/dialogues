@@ -13,8 +13,9 @@
     <script src="/scripts/dlgs.js"></script>
     <style>
       .dlgs {
-        width: 100%;
+        width: 80%;
         padding: 10px 20px;
+        margin: 0 auto;
       }
 
       .dlgs-list {
@@ -91,71 +92,27 @@
             display: none;
           }
 
-          .dlgs .dlgs-form .form-actions {
+          .dlgs-form .form-actions {
               margin: 0 0 0 0;
               background-color: transparent;
               text-align: right;
           }
 
-        #example_1 .dlgs-list {
+        #example_1 .dlgs-list, #example_1 .dlgs-list {
           max-height: 300px;
           overflow: auto;
         }
     </style>
-  </head>
-  <body>
-    <div class="container">
+    <script>
+      var customDateFormatter = function(date) {
+        return moment.unix(date + (new Date()).getTimezoneOffset()*60).fromNow();
+      };
 
-      <!-- http://blog.nodeknockout.com/post/35364532732/protip-add-the-vote-ko-badge-to-your-app -->
-      <!-- <iframe src="http://nodeknockout.com/iframe/outcold" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe> -->
+      var markdownBodyFormatter = function(text) {
+        return marked(text);
+      };
 
-      <article>
-        <h1>Test article</h1>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ac blandit felis, a facilisis nisi. Vestibulum mollis aliquet venenatis. Quisque pharetra nibh a eros fringilla elementum quis eu justo. Sed ipsum est, consectetur id sem vel, suscipit euismod elit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus dignissim quam nec libero semper tincidunt. Donec dignissim, tellus vel tincidunt rhoncus, odio turpis tincidunt ipsum, eget hendrerit orci lacus at nunc. Morbi volutpat felis ut rhoncus congue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec congue, libero eget tristique rhoncus, arcu eros tincidunt ante, ac interdum arcu lorem nec dui. Sed tempus ac magna ut consectetur. Sed eu dui a eros faucibus vestibulum. Sed eros erat, imperdiet hendrerit tincidunt ac, tincidunt quis lacus.
-        </p>
-        <p>
-          Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
-        </p>
-      </article>
-      <div id="example_1" class="dlgs">
-      </div>
-      <article>
-        <h1>Test article</h1>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ac blandit felis, a facilisis nisi. Vestibulum mollis aliquet venenatis. Quisque pharetra nibh a eros fringilla elementum quis eu justo. Sed ipsum est, consectetur id sem vel, suscipit euismod elit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus dignissim quam nec libero semper tincidunt. Donec dignissim, tellus vel tincidunt rhoncus, odio turpis tincidunt ipsum, eget hendrerit orci lacus at nunc. Morbi volutpat felis ut rhoncus congue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec congue, libero eget tristique rhoncus, arcu eros tincidunt ante, ac interdum arcu lorem nec dui. Sed tempus ac magna ut consectetur. Sed eu dui a eros faucibus vestibulum. Sed eros erat, imperdiet hendrerit tincidunt ac, tincidunt quis lacus.
-        </p>
-        <p>
-          Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
-        </p>
-      </article>
-      <div id="example_2" class="dlgs">
-      </div>
-      <article>
-        <h1>Test article</h1>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ac blandit felis, a facilisis nisi. Vestibulum mollis aliquet venenatis. Quisque pharetra nibh a eros fringilla elementum quis eu justo. Sed ipsum est, consectetur id sem vel, suscipit euismod elit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus dignissim quam nec libero semper tincidunt. Donec dignissim, tellus vel tincidunt rhoncus, odio turpis tincidunt ipsum, eget hendrerit orci lacus at nunc. Morbi volutpat felis ut rhoncus congue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec congue, libero eget tristique rhoncus, arcu eros tincidunt ante, ac interdum arcu lorem nec dui. Sed tempus ac magna ut consectetur. Sed eu dui a eros faucibus vestibulum. Sed eros erat, imperdiet hendrerit tincidunt ac, tincidunt quis lacus.
-        </p>
-        <p>
-          Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
-        </p>
-      </article>
-            <article>
-        <h1>Test article</h1>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ac blandit felis, a facilisis nisi. Vestibulum mollis aliquet venenatis. Quisque pharetra nibh a eros fringilla elementum quis eu justo. Sed ipsum est, consectetur id sem vel, suscipit euismod elit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vivamus dignissim quam nec libero semper tincidunt. Donec dignissim, tellus vel tincidunt rhoncus, odio turpis tincidunt ipsum, eget hendrerit orci lacus at nunc. Morbi volutpat felis ut rhoncus congue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec congue, libero eget tristique rhoncus, arcu eros tincidunt ante, ac interdum arcu lorem nec dui. Sed tempus ac magna ut consectetur. Sed eu dui a eros faucibus vestibulum. Sed eros erat, imperdiet hendrerit tincidunt ac, tincidunt quis lacus.
-        </p>
-        <p>
-          Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
-        </p>
-      </article>
-    </div>
-
-    <script type="text/javascript">
-      (function(){"use strict";
-
-        console.log(hljs.highlightAuto);
-
+      (function() {
         marked.setOptions({
           highlight: function (code, lang) {
             try {
@@ -169,39 +126,102 @@
           },
           sanitize: true
         });
-
-        var customDateFormatter = function(date) {
-          return moment.unix(date + (new Date()).getTimezoneOffset()*60).fromNow();
-        };
-
-        var markdownBodyFormatter = function(text) {
-          return marked(text);
-        };
-        
-        dialogues.render('#example_1', {
-          id: 'my_blog_1',
-          debug: true,
-          load: {
-            delay: false
-          },
-          render: {
-            dateFormatter: customDateFormatter
-          },
-          bodyFormatter: markdownBodyFormatter
-        });
-
-        dialogues.render('#example_2', {
-          id: 'my_blog_2',
-          debug: true,
-          load: {
-            delay: true
-          },
-          render: {
-            dateFormatter: customDateFormatter
-          }
-        });
-      })();
+       })();
     </script>
+  </head>
+  <body>
+    <div class="container">
+
+      <!-- http://blog.nodeknockout.com/post/35364532732/protip-add-the-vote-ko-badge-to-your-app -->
+      <!-- <iframe src="http://nodeknockout.com/iframe/outcold" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe> -->
+
+      <article><h1>Project Dialogues</h1>
+<p>Hi there. I'm Den (<a href="http://outcoldman.com">outcoldman</a>) and this is project Dialogues, which participates in <a href="http://nodeknockout.com/">Node.js Knockout 2013</a>.</p>
+<p>Do you like <a href="http://disqus.com/">Disqus</a>? I do. It is pretty cool project, allows you to add support for commentaries to any page in a second. But there are couple things which I don't like. I want to have an option to do some customization for how they render comments, how they store them, and of course I want to have <a href="http://daringfireball.net/projects/markdown/">markdown</a> support!</p>
+<p>So, this is it. Project Dialogues. It is not a completed project (this is hackathon what do you expect from 2 days of coding?!), but much more than just a prototype. </p>
+<p>So, let's take a look what it can do. </p>
+
+<div class="dlgs-comment-preview"><h2>Example #1</h2>
+<p>By default project Dialogues renders body commentaries as a simple text, but it is not hard at all to add support for markdown, just specify your body formatter like that (in my case I used <a href="https://github.com/chjj/marked">marked</a> library for rendering). I also used <a href="http://momentjs.com/">momentjs</a> to format dates in more human readable format. </p>
+<pre><code>dialogues.render({
+  dateFormatter: <span class="keyword">function</span>(date) {
+    <span class="keyword">var</span> currentDate = <span class="keyword">new</span> Date();
+    <span class="keyword">var</span> timezoneOffset = currentDate.getTimezoneOffset() * <span class="number">60</span>;
+    <span class="keyword">return</span> moment.unix(date + timezoneOffset).fromNow();
+  },
+  bodyFormatter: <span class="keyword">function</span>(text) {
+    <span class="keyword">return</span> marked(text);
+  }
+});</code></pre>
+<h3>Preview Example #1</h3>
+
+<div id="example1" class="dlgs">
+<script type="text/javascript">
+  (function(){"use strict";
+    dialogues.render({
+      id: 'my_blog_1',
+      debug: true,
+      load: {
+        delay: false
+      },
+      dateFormatter: customDateFormatter,
+      bodyFormatter: markdownBodyFormatter
+    });
+  })();
+</script>
+</div>
+
+<h2>Example #2</h2>
+<p>And it is not hard at all to place more than one dialogues on one page. Just specify for server different identities for Dialogues instances. And in this example I also specified that I want to load commentaries only when user will scroll to the place where we want to see them:</p>
+<pre><code><span class="tag">dialogues</span><span class="class">.render</span>(<span class="rules">{
+  <span class="rule"><span class="attribute">id</span>:<span class="value"> <span class="string">'my_blog_1'</span>,
+  load: {
+    delay: true
+  }</span></span></span>
+});</code></pre>
+<h3>Preview Example #2</h3>
+
+<div id="example2" class="dlgs">
+<script type="text/javascript">
+  (function(){"use strict";
+    dialogues.render({
+      id: 'my_blog_2',
+      debug: true,
+      load: {
+        delay: true
+      },
+      dateFormatter: customDateFormatter
+    });
+  })();
+</script>
+</div>
+
+<h2>How to use Dialogues</h2>
+<h3>Using as a service</h3>
+<p>Let's assume that <code>http://outcold.2013.nodeknockout.com</code> is a service, which provides for us Dialogues, in this case just include <code>dlgs.js</code> on your page:</p>
+<pre><code class="lang-html"><span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"http://outcold.2013.nodeknockout.com/scripts/dlgs.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span></code></pre>
+<p>Add some CSS classes to make it pretty (one of the TODOs after this hackathon will be adding default themes). </p>
+<p>At minimum just add this code to your web page:</p>
+<pre><code><span class="tag">&lt;<span class="title">body</span>&gt;</span>
+
+  <span class="tag">&lt;<span class="title">article</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">h1</span>&gt;</span>Dialogues is easy to use!<span class="tag">&lt;/<span class="title">h1</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">p</span>&gt;</span>Indeed<span class="tag">&lt;/<span class="title">p</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">article</span>&gt;</span>
+
+  <span class="tag">&lt;<span class="title">script</span>&gt;</span><span class="javascript">
+    (<span class="keyword">function</span>() {
+      dialogues.render();
+    })();
+  </span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
+
+<span class="tag">&lt;/<span class="title">body</span>&gt;</span></code></pre>
+<p>You can take a look on example here: <a href="http://jsfiddle.net/Wh5q7/"></a><a href="http://jsfiddle.net/Wh5q7/">http://jsfiddle.net/Wh5q7/</a></p>
+<p>And of course all examples below are using Dialogues! </p>
+</article>
+
+
+
 
   </body>
 </html>

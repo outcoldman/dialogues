@@ -45,6 +45,7 @@
 
   var module = {};
   var defaultOptions = {
+    $el: null,
     id: getDocumentUrl(),
     server: '/api/dialogues/', // url to load dialogues
     debug: false, // enable additional logging
@@ -53,7 +54,6 @@
       delay: true // true if you want to load dialogues only when they will be visible on page.
     },
     render: {
-      dateFormatter: defaultDateFormatter,
       templateContainer: '<ul class="dlgs-list" />',
       template: 
 '<li>\
@@ -135,6 +135,7 @@
         preview: 'div.dlgs-comment-preview'
       }
     },
+    dateFormatter: defaultDateFormatter,
     bodyFormatter: defaultBodyFormatter,
     resources: {
       anonymous: 'Anonymous'
@@ -158,15 +159,9 @@
    * @param {string|object} - query selector string for element or element itself.
    * @options {object=} - options for rendering comments
   */ 
-  module.render = function(el, options) {
+  module.render = function(options) {
     options = options ? merge(options, defaultOptions) : defaultOptions;
-
-    var element = $(el);
-    if (element) {
-      return new DialoguesInstance(element, options);
-    } else if (options.debug) {
-      console.error('Cannot get element ' + el);
-    }
+    return new DialoguesInstance(options);
   };
 
   /*
@@ -190,15 +185,20 @@
    * Render method returns instance of this type, which can be used to 
    * manipulate with commentaries on the page.
   */ 
-  var DialoguesInstance = function ($el, options) {
+  var DialoguesInstance = function (options) {
 
-    this.$el = $el;
+    if (options.$el) {
+      this.$el = $(options.$el);
+    } else {
+      this.$el = $('<div />').insertAfter(document.currentScript);
+    }
+
     this._options = options;
     this._load = options.load;
     this._render = options.render;
 
     var getCommentsContainer = function() {
-      return this._commentsContainer || (this._commentsContainer = $(this._render.templateContainer).appendTo($el));
+      return this._commentsContainer || (this._commentsContainer = $(this._render.templateContainer).appendTo(this.$el));
     }.bind(this);
 
     var scrollToBottom = function() {
@@ -237,8 +237,8 @@
 
       if(selectors.date && comment.date) {
         var date = comment.date;
-        if (this._render.dateFormatter) {
-          date = this._render.dateFormatter(date);
+        if (this._options.dateFormatter) {
+          date = this._options.dateFormatter(date);
         }
         $(selectors.date, commentSection).text(date);
       }
