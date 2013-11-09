@@ -4,7 +4,7 @@
 
   var defaultDateFormatter = function(date) {
     var d = new Date();
-    d.setTime(date + d.getTimezoneOffset());
+    d.setTime(date + d.getTimezoneOffset() * 60);
     return d.toLocaleString();
   }
 
@@ -20,12 +20,12 @@
       dateFormatter: defaultDateFormatter,
       template: 
 '<section class="comment">\
-  <a class="user-link" >\
+  <a class="website" >\
     <img class="avatar" height=80 width=80 />\
   </a>\
   <div class="header">\
     <div>\
-      <a class="user-name user-link" />\
+      <a class="name website" />\
       <a class="comment-link">\
         <span class="date" />\
       </a>\
@@ -34,8 +34,8 @@
   <div class="comment-body" />\
 </section>',
       selectors: {
-        userName: 'a.user-name', // 
-        userLink: 'a.user-link', // 
+        name: 'a.name', // 
+        website: 'a.website', // 
         icon: 'img.avatar',
         date: 'span.date',
         body: 'div.comment-body',
@@ -68,7 +68,7 @@
       </div>\
       <div class="checkbox">\
         <label>\
-          <input type="checkbox" id="comment-nofification"> Notify about new comments\
+          <input type="checkbox" id="comment-subscription"> Notify about new comments\
         </label>\
       </div>\
     </div>\
@@ -88,7 +88,7 @@
         username: '#comment-name',
         email: '#comment-email',
         website: '#comment-website',
-        nofification: '#comment-nofification',
+        subscription: '#comment-subscription',
         body: '#comment-body',
         submit: 'button[type=submit]',
         cancel: 'button[type=button]',
@@ -151,10 +151,10 @@
   var CommentsInstance = function ($el, options) {
 
     this.$el = $el;
+    this._commentsContainer = $('<div />').appendTo($el);
     this._options = options;
     this._load = options.load;
     this._render = options.render;
-
     /*
      * Render comment and append element to main element this.el
     */ 
@@ -164,7 +164,7 @@
       var commentSection = $(this._render.template)
         .data('comment', comment);
 
-      var name = comment.userName || this._options.resources.anonymous;
+      var name = comment.name || this._options.resources.anonymous;
 
       if (comment.icon && selectors.icon) {
         $(selectors.icon, commentSection)
@@ -174,14 +174,13 @@
           });
       }
       
-      if (comment.link) {
-        $(selectors.userLink, commentSection).attr({ href: comment.link });
+      if (comment.website) {
+        $(selectors.website, commentSection).attr({ href: comment.website });
       } else {
-        console.log('disabled');
-        $(selectors.userLink, commentSection).attr({ disabled: true });
+        $(selectors.website, commentSection).attr({ disabled: true });
       }
 
-      $(selectors.userName, commentSection).text(name);
+      $(selectors.name, commentSection).text(name);
 
       if(selectors.date && comment.date) {
         var date = comment.date;
@@ -203,7 +202,7 @@
       $(selectors.body, commentSection)
         .html(comment.body);
 
-      this.$el.append(commentSection);
+      this._commentsContainer.append(commentSection);
     }.bind(this);
 
     var renderForm = function() {
@@ -234,6 +233,33 @@
           return false;
         }.bind(this));
 
+      $(formRender.selectors.submit, form)
+        .click(function() {
+          
+          var comment = {
+            name: $(formRender.selectors.username, form).val(),
+            website: $(formRender.selectors.website, form).val(),
+            email: $(formRender.selectors.email, form).val(),
+            subscription: $(formRender.selectors.subscription, form).prop('checked'),
+            body: $(formRender.selectors.body, form).val()
+          }
+
+          this.add(comment)
+            .done(function(result) {
+              form.hide();
+              placeholder.fadeIn();
+              comment = merge(comment, result);
+              renderComment(comment);
+            }.bind(this))
+            .fail(function(req, error, status) {
+              if (this._options.debug) {
+                console.error('Cannot load comments from server, error: ' + error + ', response: ' + status);
+              }
+              /* TODO: show error to user. */
+            }.bind(this));
+          return false;
+        }.bind(this))
+
       this.$el.append(placeholder);
       this.$el.append(form);
         
@@ -243,17 +269,18 @@
      * Load commentaries from server
     */
     this.load = function() {
-      $.get(this._options.server, function(data) {
+      return $.get(this._options.server, function(data) {
         this.$el.hide();
         var commentRenderer = typeof this._render === 'function' ? this._render : renderComment;
         for (var i = 0; i < data.length; i++) {
-          commentRenderer(data[i], i, this.$el);
+          commentRenderer(data[i], i, this._commentsContainer);
         }
         if (this._options.formRender) {
           renderForm();
         }
         this.$el.fadeIn();
-      }.bind(this)).fail(function(req, error, status) {
+      }.bind(this))
+      .fail(function(req, error, status) {
         if (this._options.debug) {
           console.error('Cannot load comments from server, error: ' + error + ', response: ' + status);
         }
@@ -261,8 +288,8 @@
       }.bind(this));
     }.bind(this);
 
-    this.add = function() {
-
+    this.add = function(comment) {
+      return $.post(this._options.server, JSON.stringify(comment), null, "json");
     }.bind(this);
 
     if (this._load && !this._load.manual) {

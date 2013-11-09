@@ -34,15 +34,15 @@
             float: left;
           }
 
-          #comments .comment .header a.user-name {
+          #comments .comment .header a.name {
             font-size:large;
           }
 
-          #comments .comment .header a.user-name[disabled] {
+          #comments .comment .header a.name[disabled] {
             color: #555;
           }
 
-          #comments .comment .header a.user-name[disabled]:hover {
+          #comments .comment .header a.name[disabled]:hover {
             text-decoration: none;
           }
 
@@ -63,9 +63,8 @@
           }
 
           #comments .comment .comment-body {
-            border: 1px solid #dbdbdb;
-            border-radius: 10px;
-            padding: 5px 10px;
+            border-bottom: 1px dashed #dbdbdb;
+            padding: 5px 10px 20px 10px;
             margin-left: 100px;
           }
 
@@ -134,7 +133,7 @@
           },
           render: {
             dateFormatter: function(date) {
-              return moment.unix(date).fromNow();
+              return moment.unix(date + (new Date()).getTimezoneOffset()*60).fromNow();
             }
           }
         };
