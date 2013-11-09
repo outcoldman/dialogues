@@ -2,15 +2,36 @@
 require('nko')('BcVz0EJtyJp_foHO');
 
 var isProduction = (process.env.NODE_ENV === 'production');
-var http = require('http');
+
+var http = require('http'),
+    fs = require('fs'),
+    path = require('path'),
+    comments = require('./lib/comments');
+
 var port = (isProduction ? 80 : 8000);
 
-http.createServer(function (req, res) {
-  // http://blog.nodeknockout.com/post/35364532732/protip-add-the-vote-ko-badge-to-your-app
-  var voteko = '<iframe src="http://nodeknockout.com/iframe/outcold" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe>';
+function staticResourceHandler(responce, resource, contentType) {
+  var pagePath = path.join(__dirname, resource);
 
-  res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end('<html><body>' + voteko + '</body></html>\n');
+  responce.writeHead(200, {
+    'Content-Type': contentType
+  });
+
+  fs.createReadStream(pagePath).pipe(responce);
+}
+
+http.createServer(function (req, res) {
+  console.log(req.url);
+  if (req.url === '/api/comments/') {
+    comments.httpHandle(req, res);
+  } else if (req.url === '/scripts/comments.js') {
+    staticResourceHandler(res, './client/js/comments-client.js', 'text/javascript');
+  } else if (req.url === '/') {
+    staticResourceHandler(res, './test/onepage/page.html');
+  } else {
+    res.writeHead(404, {'Content-Type': 'text/html'});
+    res.end('<html><body>Not found</body></html>\n');
+  }
 }).listen(port, function(err) {
   if (err) { console.error(err); process.exit(-1); }
 
