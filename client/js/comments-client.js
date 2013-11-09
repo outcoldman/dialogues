@@ -12,7 +12,7 @@
   var defaultOptions = {
     server: '/api/comments/', // url to commentaries
     debug: false, // enable additional logging
-    loading: { // loading settings
+    load: { // loading settings
       manual: false, // true if you want to load commentaries in special moment with load() method
       delay: true // true if you want to load comments only when they will be visible on page.
     },
@@ -100,20 +100,20 @@
   var CommentsInstance = function ($el, options) {
 
     this.$el = $el;
-    this.options = options;
-    this.loading = options.loading;
-    this.render = options.render;
+    this._options = options;
+    this._load = options.load;
+    this._render = options.render;
 
     /*
      * Render comment and append element to main element this.el
     */ 
     var renderComment = function(comment) {
-      var selectors = this.render.selectors;
+      var selectors = this._render.selectors;
 
-      var commentSection = $(this.render.template)
+      var commentSection = $(this._render.template)
         .data('comment', comment);
 
-      var name = comment.userName || this.options.resources.anonymous;
+      var name = comment.userName || this._options.resources.anonymous;
 
       if (comment.icon && selectors.icon) {
         $(selectors.icon, commentSection)
@@ -134,8 +134,8 @@
 
       if(selectors.date && comment.date) {
         var date = comment.date;
-        if (this.render.dateFormatter) {
-          date = this.render.dateFormatter(date);
+        if (this._render.dateFormatter) {
+          date = this._render.dateFormatter(date);
         }
         $(selectors.date, commentSection).text(date);
       }
@@ -159,13 +159,13 @@
      * Load commentaries from server
     */
     this.load = function() {
-      $.get(this.options.server, function(data) {
-        var commentRenderer = typeof this.render === 'function' ? this.render : renderComment;
+      $.get(this._options.server, function(data) {
+        var commentRenderer = typeof this._render === 'function' ? this._render : renderComment;
         for (var i = 0; i < data.length; i++) {
           commentRenderer(data[i], i, this.$el);
         }
       }.bind(this)).fail(function(req, error, status) {
-        if (this.options.debug) {
+        if (this._options.debug) {
           console.error('Cannot load comments from server, error: ' + error + ', response: ' + status);
         }
         /* TODO: show error to user. */
@@ -176,11 +176,11 @@
 
     }.bind(this);
 
-    if (this.loading && !this.loading.manual) {
-      if (this.loading.delay) {
+    if (this._load && !this._load.manual) {
+      if (this._load.delay) {
         var loaded = false;
         var loadOnVisible = function () {
-          if (!loaded && this.el.getBoundingClientRect().top <= window.innerHeight) {
+          if (!loaded && this.$el[0].getBoundingClientRect().top <= window.innerHeight) {
             this.load();
             loaded = true;
           }
