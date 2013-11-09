@@ -10,96 +10,97 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.4.0/moment.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.2.9/marked.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js"></script>
-    <script src="/scripts/comments.js"></script>
+    <script src="/scripts/dlgs.js"></script>
     <style>
-      .comments {
+      .dlgs {
         width: 100%;
         padding: 10px 20px;
       }
 
-      .comments-container {
+      .dlgs-list {
         list-style: none;
         padding: 0;
       }
 
-        #comments .comments-container {
-          max-height: 300px;
-          overflow: auto;
-        }
-
-        .comments .comment {
+        .dlgs-list .dlgs-comment {
           width: 100%;
           min-height: 100px;
           margin-bottom: 20px;
         }
 
-        .comments .comment:last-child {
+        .dlgs-list .dlgs-comment:last-child {
           margin-bottom: 0px;
         }
 
-          .comments .comment .header {
-            margin-left: 100px;
-            margin-bottom: 10px;
-          }
-
-          .comments .comment img.avatar {
+          .dlgs-list .dlgs-comment img.dlgs-participant-avatar {
             border-radius: 50%;
             float: left;
           }
 
-          .comments .comment .header a.name {
+          .dlgs-list .dlgs-comment .dlgs-comment-header {
+            margin-left: 100px;
+            margin-bottom: 10px;
+          }
+
+
+          .dlgs-list .dlgs-comment .dlgs-comment-header a.dlgs-participant-name {
             font-size:large;
           }
 
-          .comments .comment .header a.name[disabled] {
+          .dlgs-list .dlgs-comment .dlgs-comment-header a.dlgs-participant-name[disabled] {
             color: #555;
           }
 
-          .comments .comment .header a.name[disabled]:hover {
+          .dlgs-list .dlgs-comment .dlgs-comment-header a.dlgs-participant-name[disabled]:hover {
             text-decoration: none;
           }
 
-          .comments .comment .header a.comment-link {
+          .dlgs-list .dlgs-comment .dlgs-comment-header a.dlgs-comment-link {
             color: black;
             opacity: .5;
             font-size: small;
           }
 
-          .comments .comment .header a.comment-link:hover {
+          .dlgs-list .dlgs-comment .dlgs-comment-header a.dlgs-comment-link:hover {
             text-decoration: none;
           }
 
-          .comments .comment .header a.comment-link:before {
+          .dlgs-list .dlgs-comment .dlgs-comment-header a.dlgs-comment-link:before {
             content: "·";
             margin-right: 5px;
             margin-left: 5px;
           }
 
-          .comments .comment .comment-body {
+          .dlgs-list .dlgs-comment .dlgs-comment-body {
             border-bottom: 1px dashed #dbdbdb;
             padding: 5px 10px 20px 10px;
             margin-left: 100px;
           }
 
-          .comments form {
+          .dlgs .dlgs-form {
             margin-top: 20px;
           }
 
-          .comments div.comment-preview{
+          .dlgs .dlgs-form div.dlgs-comment-preview{
             border: 1px dashed #dbdbdb;
             padding: 10px 10px 10px 10px;
             margin: 5px 0px 10px 0px;
           }
 
-          .comments div.comment-preview:empty {
+          .dlgs .dlgs-form div.dlgs-comment-preview:empty {
             display: none;
           }
 
-          .comments .form-actions {
+          .dlgs .dlgs-form .form-actions {
               margin: 0 0 0 0;
               background-color: transparent;
               text-align: right;
           }
+
+        #example_1 .dlgs-list {
+          max-height: 300px;
+          overflow: auto;
+        }
     </style>
   </head>
   <body>
@@ -117,7 +118,7 @@
           Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
         </p>
       </article>
-      <div id="comments" class="comments">
+      <div id="example_1" class="dlgs">
       </div>
       <article>
         <h1>Test article</h1>
@@ -128,7 +129,7 @@
           Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
         </p>
       </article>
-      <div id="comments_2" class="comments">
+      <div id="example_2" class="dlgs">
       </div>
       <article>
         <h1>Test article</h1>
@@ -177,12 +178,11 @@
           return marked(text);
         };
         
-        comments.render('#comments', {
+        dialogues.render('#example_1', {
           id: 'my_blog_1',
-          server:'/api/comments/',
           debug: true,
           load: {
-            delay: true
+            delay: false
           },
           render: {
             dateFormatter: customDateFormatter
@@ -190,9 +190,8 @@
           bodyFormatter: markdownBodyFormatter
         });
 
-        comments.render('#comments_2', {
+        dialogues.render('#example_2', {
           id: 'my_blog_2',
-          server:'/api/comments/',
           debug: true,
           load: {
             delay: true

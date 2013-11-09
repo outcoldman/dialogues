@@ -46,39 +46,39 @@
   var module = {};
   var defaultOptions = {
     id: getDocumentUrl(),
-    server: '/api/comments/', // url to commentaries
+    server: '/api/dialogues/', // url to load dialogues
     debug: false, // enable additional logging
     load: { // loading settings
       manual: false, // true if you want to load commentaries in special moment with load() method
-      delay: true // true if you want to load comments only when they will be visible on page.
+      delay: true // true if you want to load dialogues only when they will be visible on page.
     },
     render: {
       dateFormatter: defaultDateFormatter,
-      templateContainer: '<ul class="comments-container" />',
+      templateContainer: '<ul class="dlgs-list" />',
       template: 
 '<li>\
-  <section class="comment">\
-    <a class="website" >\
-      <img class="avatar" height=80 width=80 />\
+  <section class="dlgs-comment">\
+    <a class="dlgs-participant-website" >\
+      <img class="dlgs-participant-avatar" height=80 width=80 />\
     </a>\
-    <div class="header">\
+    <div class="dlgs-comment-header">\
       <div>\
-        <a class="name website" />\
-        <a class="comment-link">\
-          <span class="date" />\
+        <a class="dlgs-participant-name dlgs-participant-website" />\
+        <a class="dlgs-comment-link">\
+          <span class="dlgs-comment-date" />\
         </a>\
       </div>\
     </div>\
-    <div class="comment-body" />\
+    <div class="dlgs-comment-body" />\
   </section>\
 </li>',
       selectors: {
-        name: 'a.name', // 
-        website: 'a.website', // 
-        icon: 'img.avatar',
-        date: 'span.date',
-        body: 'div.comment-body',
-        commentLink: 'a.comment-link' 
+        name: 'a.dlgs-participant-name', // 
+        website: 'a.dlgs-participant-website', // 
+        icon: 'img.dlgs-participant-avatar',
+        date: 'span.dlgs-comment-date',
+        body: 'div.dlgs-comment-body',
+        commentLink: 'a.dlgs-comment-link' 
       }
     },
     formRender: {
@@ -90,49 +90,49 @@
         button: 'a'
       },
       template: 
-'<form role="form">\
+'<form role="form" class="dlgs-form">\
   <div class="row">\
     <div class="col-md-4">\
       <div class="form-group">\
-        <label for="comment-name-{id}">Display name:</label>\
-        <input type="text" class="form-control" name="comment-name" id="comment-name{-id}" placeholder="Enter display name">\
+        <label for="dlgs-participant-name-{id}">Display name:</label>\
+        <input type="text" class="form-control" name="dlgs-participant-name" id="dlgs-participant-name{-id}" placeholder="Enter display name">\
       </div>\
       <div class="form-group">\
-        <label for="comment-email-{id}">Email:</label>\
-        <input type="email" class="form-control" name="comment-email" id="comment-email-{id}" placeholder="Enter email">\
+        <label for="dlgs-participant-email-{id}">Email:</label>\
+        <input type="email" class="form-control" name="dlgs-participant-email" id="dlgs-participant-email-{id}" placeholder="Enter email">\
       </div>\
       <div class="form-group">\
-        <label for="comment-website-{id}">Website:</label>\
-        <input type="url" class="form-control" name="comment-website" id="comment-website-{id}" placeholder="Enter website">\
+        <label for="dlgs-participant-website-{id}">Website:</label>\
+        <input type="url" class="form-control" name="dlgs-participant-website" id="dlgs-participant-website-{id}" placeholder="Enter website">\
       </div>\
       <div class="checkbox">\
         <label>\
-          <input type="checkbox" name="comment-subscription" id="comment-subscription-{id}"> Notify about new comments\
+          <input type="checkbox" name="dlgs-participant-subscription" id="dlgs-participant-subscription-{id}"> Notify about new comments\
         </label>\
       </div>\
     </div>\
     <div class="col-md-8">\
       <div class="form-group">\
-        <label for="comment-body-{id}">Body:</label>\
-        <textarea class="form-control" rows="10" name="comment-body" id="comment-body-{id}" autofocus="true"></textarea>\
+        <label for="dlgs-comment-body-{id}">Body:</label>\
+        <textarea class="form-control" rows="10" name="dlgs-comment-body" id="dlgs-comment-body-{id}" autofocus="true"></textarea>\
       </div>\
     </div>\
   </div>\
-  <div class="comment-preview" />\
+  <div class="dlgs-comment-preview" />\
   <div class="form-actions">\
     <button type="submit" class="btn btn-primary">Submit</button>\
     <button type="button" class="btn btn-default">Cancel</button>\
   </div>\
 </form>',
       selectors: {
-        username: 'input[name=comment-name]',
-        email: 'input[name=comment-email]',
-        website: 'input[name=comment-website]',
-        subscription: 'input[name=comment-subscription]',
-        body: 'textarea[name=comment-body]',
+        username: 'input[name=dlgs-participant-name]',
+        email: 'input[name=dlgs-participant-email]',
+        website: 'input[name=dlgs-participant-website]',
+        subscription: 'input[name=dlgs-participant-subscription]',
+        body: 'textarea[name=dlgs-comment-body]',
         submit: 'button[type=submit]',
         cancel: 'button[type=button]',
-        preview: 'div.comment-preview'
+        preview: 'div.dlgs-comment-preview'
       }
     },
     bodyFormatter: defaultBodyFormatter,
@@ -141,15 +141,15 @@
     }
   };
 
-  var root = window, previousComments;
-  previousComments = root.comments;
+  var root = window, previousDialogues;
+  previousDialogues = root.dialogues;
 
   /*
-   * If global object `comments` already defined this method allows to resolve conflicts.
+   * If global object `dialogues` already defined this method allows to resolve conflicts.
    * Call it to get access to current module.
   */
   module.noConflict = function () {
-    root.comments = previousComments;
+    root.dialogues = previousDialogues;
     return module;
   };
 
@@ -163,7 +163,7 @@
 
     var element = $(el);
     if (element) {
-      return new CommentsInstance(element, options);
+      return new DialoguesInstance(element, options);
     } else if (options.debug) {
       console.error('Cannot get element ' + el);
     }
@@ -190,7 +190,7 @@
    * Render method returns instance of this type, which can be used to 
    * manipulate with commentaries on the page.
   */ 
-  var CommentsInstance = function ($el, options) {
+  var DialoguesInstance = function ($el, options) {
 
     this.$el = $el;
     this._options = options;
@@ -293,7 +293,7 @@
         formRender.selectors.email + ',' +
         formRender.selectors.website, form)
       .on('input', function(){
-        setCookie('comments-author', JSON.stringify({
+        setCookie('dlgs-participant', JSON.stringify({
           name: $(formRender.selectors.username, form).val(),
           email: $(formRender.selectors.email, form).val(),
           website: $(formRender.selectors.website, form).val()
@@ -301,7 +301,7 @@
       });
 
       // Check if this is returned user
-      var author = getCookie('comments-author');
+      var author = getCookie('dlgs-participant');
       if (author) {
         author = JSON.parse(author)
         $(formRender.selectors.username, form).val(author.name),
@@ -421,7 +421,7 @@
         return module;
     });
   } else {
-    root.comments = module;
+    root.dialogues = module;
   }
 
 })();

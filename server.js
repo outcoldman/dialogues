@@ -7,7 +7,7 @@ var http = require('http'),
     fs = require('fs'),
     path = require('path'),
     url = require('url'),
-    comments = require('./lib/comments');
+    dialogues = require('./lib/dialogues');
 
 var port = (isProduction ? 80 : 8000);
 
@@ -25,10 +25,10 @@ http.createServer(function (req, res) {
   if (!isProduction) {
     console.log('Handling request: ' + req.url);
   }
-  if (url.parse(req.url).pathname === '/api/comments/') {
-    comments.httpHandle(req, res);
-  } else if (req.url === '/scripts/comments.js') {
-    staticResourceHandler(res, './client/js/comments-client.js', 'text/javascript');
+  if (url.parse(req.url).pathname === '/api/dialogues/') {
+    dialogues.httpHandle(req, res);
+  } else if (req.url === '/scripts/dlgs.js') {
+    staticResourceHandler(res, './client/js/dlgs.js', 'text/javascript');
   } else if (req.url === '/') {
     staticResourceHandler(res, './test/onepage/page.html');
   } else {
