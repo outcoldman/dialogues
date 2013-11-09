@@ -8,6 +8,10 @@
     return d.toLocaleString();
   }
 
+  var defaultBodyFormatter = function(text) {
+    return $('<div />').text(text).html().replace(/\n/g, '<br/>');
+  }
+
   var module = {};
   var defaultOptions = {
     server: '/api/comments/', // url to commentaries
@@ -56,7 +60,7 @@
     <div class="col-md-4">\
       <div class="form-group">\
         <label for="comment-name">Display name:</label>\
-        <input type="password" class="form-control" id="comment-name" placeholder="Enter display name">\
+        <input type="text" class="form-control" id="comment-name" placeholder="Enter display name">\
       </div>\
       <div class="form-group">\
         <label for="comment-email">Email:</label>\
@@ -64,7 +68,7 @@
       </div>\
       <div class="form-group">\
         <label for="comment-website">Website:</label>\
-        <input type="email" class="form-control" id="comment-website" placeholder="Enter website">\
+        <input type="url" class="form-control" id="comment-website" placeholder="Enter website">\
       </div>\
       <div class="checkbox">\
         <label>\
@@ -79,6 +83,7 @@
       </div>\
     </div>\
   </div>\
+  <div class="comment-preview" />\
   <div class="form-actions">\
     <button type="submit" class="btn btn-primary">Submit</button>\
     <button type="button" class="btn btn-default">Cancel</button>\
@@ -92,8 +97,10 @@
         body: '#comment-body',
         submit: 'button[type=submit]',
         cancel: 'button[type=button]',
+        preview: 'div.comment-preview'
       }
     },
+    bodyFormatter: defaultBodyFormatter,
     resources: {
       anonymous: 'Anonymous'
     }
@@ -200,16 +207,24 @@
       }
       
       $(selectors.body, commentSection)
-        .html(comment.body);
+        .html(this._options.bodyFormatter(comment.body));
 
       this._commentsContainer.append(commentSection);
     }.bind(this);
 
     var renderForm = function() {
       var formRender = this._options.formRender;
+      var bodyFormatter = this._options.bodyFormatter;
 
       var placeholder = $(formRender.templatePlaceholder);
       var form = $(this._options.formRender.template).hide();
+
+      if (formRender.selectors.preview) {
+        var preview = $(formRender.selectors.preview, form);
+        $(formRender.selectors.body, form).on('input', function() {
+          preview.html(bodyFormatter($(this).val()));
+        });
+      }
 
       $(formRender.placeholderSelectors.button, placeholder)
         .click(function() {

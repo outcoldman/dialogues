@@ -4,9 +4,12 @@
     <meta charset="utf-8" />
     <title>One page test</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/styles/github.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
     <script src="//code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.4.0/moment.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.2.9/marked.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js"></script>
     <script src="/scripts/comments.js"></script>
     <style>
       #comments {
@@ -68,6 +71,20 @@
             margin-left: 100px;
           }
 
+          #comments form {
+            margin-top: 20px;
+          }
+
+          #comments div.comment-preview{
+            border: 1px dashed #dbdbdb;
+            padding: 10px 10px 10px 10px;
+            margin: 5px 0px 10px 0px;
+          }
+
+          #comments div.comment-preview:empty {
+            display: none;
+          }
+
           #comments .form-actions {
               margin: 0 0 0 0;
               background-color: transparent;
@@ -90,8 +107,8 @@
           Pellentesque volutpat nisl id pulvinar condimentum. Maecenas at libero ut sapien sollicitudin porta quis et nisi. In adipiscing sed enim quis sollicitudin. Quisque placerat rutrum tempus. Donec feugiat massa sed ante sodales viverra. Mauris quis volutpat arcu. Donec congue mattis urna ut commodo. Vestibulum gravida turpis sed accumsan sagittis.
         </p>
       </article>
-      <section id="comments">
-      </section>
+      <div id="comments">
+      </div>
             <article>
         <h1>Test article</h1>
         <p>
@@ -125,6 +142,22 @@
       (function(){
         "use strict";
 
+        console.log(hljs.highlightAuto);
+
+        marked.setOptions({
+          highlight: function (code, lang) {
+            try {
+              if (code) {
+                return hljs.highlight(lang, code, false).value;
+              }
+            } catch (e) {
+              console.error(e);
+              return hljs.highlightAuto(code).value;
+            }
+          },
+          sanitize: true
+        });
+
         var options = {
           server:'/api/comments/',
           debug: true,
@@ -135,6 +168,9 @@
             dateFormatter: function(date) {
               return moment.unix(date + (new Date()).getTimezoneOffset()*60).fromNow();
             }
+          },
+          bodyFormatter: function(text) {
+            return marked(text);
           }
         };
         
