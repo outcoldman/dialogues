@@ -16,7 +16,7 @@
       manual: false, // true if you want to load commentaries in special moment with load() method
       delay: true // true if you want to load comments only when they will be visible on page.
     },
-    rendering: {
+    render: {
       commentRenderer: null,
       dateFormatter: defaultDateFormatter,
       template: 
@@ -99,15 +99,15 @@
     this.$el = $el;
     this.options = options;
     this.loading = options.loading;
-    this.rendering = options.rendering;
+    this.render = options.render;
 
     /*
      * Render comment and append element to main element this.el
     */ 
     var renderComment = function(comment) {
-      var selectors = this.options.rendering.selectors;
+      var selectors = this.render.selectors;
 
-      var commentSection = $(this.rendering.template)
+      var commentSection = $(this.render.template)
         .data('comment', comment);
 
       var name = comment.userName || this.options.resources.anonymous;
@@ -128,8 +128,8 @@
 
       if(selectors.date && comment.date) {
         var date = comment.date;
-        if (this.options.rendering.dateFormatter) {
-          date = this.options.rendering.dateFormatter(date);
+        if (this.render.dateFormatter) {
+          date = this.render.dateFormatter(date);
         }
         $(selectors.date, commentSection).text(date);
       }
@@ -154,8 +154,9 @@
     */
     this.load = function() {
       $.get(this.options.server, function(data) {
+        var commentRenderer = typeof this.render === 'function' ? this.render : renderComment;
         for (var i = 0; i < data.length; i++) {
-          (this.options.rendering.commentRenderer || renderComment)(data[i], i, this.$el);
+          commentRenderer(data[i], i, this.$el);
         }
       }.bind(this)).fail(function(req, error, status) {
         if (this.options.debug) {
