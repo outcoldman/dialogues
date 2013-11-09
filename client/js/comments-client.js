@@ -12,6 +12,30 @@
     return $('<div />').text(text).html().replace(/\n/g, '<br/>');
   }
 
+  var getCookie = function (sKey) {
+    return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+  }
+
+  var setCookie = function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+    if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
+    var sExpires = "";
+    if (vEnd) {
+      switch (vEnd.constructor) {
+        case Number:
+          sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+          break;
+        case String:
+          sExpires = "; expires=" + vEnd;
+          break;
+        case Date:
+          sExpires = "; expires=" + vEnd.toUTCString();
+          break;
+      }
+    }
+    document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+    return true;
+  }
+
   var module = {};
   var defaultOptions = {
     server: '/api/comments/', // url to commentaries
@@ -224,6 +248,27 @@
         $(formRender.selectors.body, form).on('input', function() {
           preview.html(bodyFormatter($(this).val()));
         });
+      }
+
+      // Story user data in cookie, so user will not need to reenter it every time
+      $(formRender.selectors.username + ',' +
+        formRender.selectors.email + ',' +
+        formRender.selectors.website, form)
+      .on('input', function(){
+        setCookie('comments-author', JSON.stringify({
+          name: $(formRender.selectors.username, form).val(),
+          email: $(formRender.selectors.email, form).val(),
+          website: $(formRender.selectors.website, form).val()
+        }));
+      });
+
+      // Check if this is returned user
+      var author = getCookie('comments-author');
+      if (author) {
+        author = JSON.parse(author)
+        $(formRender.selectors.username, form).val(author.name),
+        $(formRender.selectors.email, form).val(author.email),
+        $(formRender.selectors.website, form).val(author.website)
       }
 
       $(formRender.placeholderSelectors.button, placeholder)
