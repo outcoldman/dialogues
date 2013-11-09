@@ -300,18 +300,19 @@
         }));
       });
 
-      // Check if this is returned user
-      var author = getCookie('dlgs-participant');
-      if (author) {
-        author = JSON.parse(author)
-        $(formRender.selectors.username, form).val(author.name),
-        $(formRender.selectors.email, form).val(author.email),
-        $(formRender.selectors.website, form).val(author.website)
-      }
-
       $(formRender.placeholderSelectors.button, placeholder)
         .click(function() {
           placeholder.hide();
+
+          // Check if this is returned user - just fill the form
+          var author = getCookie('dlgs-participant');
+          if (author) {
+            author = JSON.parse(author)
+            $(formRender.selectors.username, form).val(author.name),
+            $(formRender.selectors.email, form).val(author.email),
+            $(formRender.selectors.website, form).val(author.website)
+          }
+
           form.fadeIn();
           var bottom = form[0].getBoundingClientRect().bottom; 
           var windowHeight = $(window).height();
