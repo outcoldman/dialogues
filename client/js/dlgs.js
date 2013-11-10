@@ -5,20 +5,6 @@
   var supportStorage = typeof(Storage)!=="undefined";
 
   /*
-  * Default date formatter just returns date in locale string
-  */ 
-  var defaultDateFormatter = function(date) {
-    return date.toLocaleString();
-  }
-
-  /*
-  * Default body formatter just sanitize encode all html tags
-  */
-  var defaultBodyFormatter = function(text) {
-    return $('<div />').text(text).html().replace(/\n/g, '<br/>');
-  }
-
-  /*
   * Get cookie by key
   */
   var getCookie = function (sKey) {
@@ -150,8 +136,12 @@
         preview: 'div.dlgs-comment-preview'
       }
     },
-    dateFormatter: defaultDateFormatter, // Formatter function for dates
-    bodyFormatter: defaultBodyFormatter, // Formatter function for comment body
+    dateFormatter: function(date) { // Default date formatter converts it to local string
+      return date.toLocaleString();
+    }, 
+    bodyFormatter: function(text) { // Default body formatter is plain text
+      return $('<div />').text(text).html().replace(/\n/g, '<br/>');
+    }, 
     resources: { // String resources
       anonymous: 'Anonymous'
     }

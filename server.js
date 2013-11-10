@@ -30,7 +30,7 @@ app = http.createServer(function (req, res) {
     dialogues.httpHandle(req, res);
   } else if (req.url === '/scripts/dlgs.js') {
     staticResourceHandler(res, './client/js/dlgs.js', 'text/javascript');
-  } else if (req.url === '/') {
+  } else if (req.url === '/' || req.url.indexOf('.html') >= 0) {
     staticResourceHandler(res, './test/onepage/page.html');
   } else {
     res.writeHead(404, {'Content-Type': 'text/html'});
