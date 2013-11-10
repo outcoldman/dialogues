@@ -259,6 +259,12 @@
       getCommentsContainer().append(commentSection);
     }.bind(this);
 
+    var renderComments = function(comments) {
+      for (var i = 0; i < comments.length; i++) {
+        renderComment(comments[i]);
+      }
+    }
+
     /*
     * Render form under comments
     */
@@ -350,8 +356,7 @@
             .done(function(result) {
               form.hide();
               placeholder.fadeIn();
-              comment = merge(comment, result);
-              renderComment(comment);
+              renderComments(result);
               $(formRender.selectors.body, form).val('').trigger('input');
               scrollToBottom();
             }.bind(this))
@@ -375,9 +380,7 @@
     this.load = function() {
       return $.getJSON(this._options.server, { id: this._options.id }, function(data) {
         this.$el.hide();
-        for (var i = 0; i < data.length; i++) {
-          renderComment(data[i]);
-        }
+        renderComments(data);
         if (this._options.formRender) {
           renderForm();
         }
