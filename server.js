@@ -7,6 +7,7 @@ var http = require('http'),
     fs = require('fs'),
     path = require('path'),
     url = require('url'),
+    socket = require('socket.io')
     dialogues = require('./lib/dialogues');
 
 var port = (isProduction ? 80 : 8000);
@@ -21,7 +22,7 @@ function staticResourceHandler(responce, resource, contentType) {
   fs.createReadStream(pagePath).pipe(responce);
 }
 
-http.createServer(function (req, res) {
+app = http.createServer(function (req, res) {
   if (!isProduction) {
     console.log('Handling request: ' + req.url);
   }
@@ -47,4 +48,9 @@ http.createServer(function (req, res) {
   }
 
   console.log('Server running at http://0.0.0.0:' + port + '/');
+});
+
+io = socket.listen(app);
+io.of('/api/dialogues/').on('connection', function (socket) {
+  dialogues.socketHandle(socket);
 });

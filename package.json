@@ -14,7 +14,8 @@
     "nko": "*",
     "mongoose": "*",
     "gravatar": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "socket.io": "*"
   },
   "engines": {
     "node": "0.10.x"

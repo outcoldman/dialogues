@@ -4,40 +4,47 @@
 
   var supportStorage = typeof(Storage)!=="undefined";
 
+  /*
+  * Default date formatter just returns date in locale string
+  */ 
   var defaultDateFormatter = function(date) {
     var d = new Date();
     d.setTime(date + d.getTimezoneOffset() * 60);
     return d.toLocaleString();
   }
 
+  /*
+  * Default body formatter just sanitize encode all html tags
+  */
   var defaultBodyFormatter = function(text) {
     return $('<div />').text(text).html().replace(/\n/g, '<br/>');
   }
 
+  /*
+  * Get cookie by key
+  */
   var getCookie = function (sKey) {
     return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
   }
 
-  var setCookie = function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+  /*
+  * Set cookie (without expiration date)
+  */
+  var setCookie = function (sKey, sValue, sDomain, sPath) {
     if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
-    var sExpires = "";
-    if (vEnd) {
-      switch (vEnd.constructor) {
-        case Number:
-          sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
-          break;
-        case String:
-          sExpires = "; expires=" + vEnd;
-          break;
-        case Date:
-          sExpires = "; expires=" + vEnd.toUTCString();
-          break;
-      }
-    }
-    document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+    document.cookie = 
+      encodeURIComponent(sKey) + 
+      "=" + 
+      encodeURIComponent(sValue) + 
+      "; expires=Fri, 31 Dec 9999 23:59:59 GMT" + 
+      (sDomain ? "; domain=" + sDomain : "") + 
+      (sPath ? "; path=" + sPath : "");
     return true;
   }
 
+  /*
+  * Get document url (without hash-tags)
+  */
   var getDocumentUrl = function() {
     var url = document.location;
     return url.href.substr(0, url.href.length - url.hash.length);
@@ -51,11 +58,12 @@
     debug: false, // enable additional logging
     load: { // loading settings
       manual: false, // true if you want to load commentaries in special moment with load() method
-      delay: true // true if you want to load dialogues only when they will be visible on page.
+      delay: true, // true if you want to load dialogues only when they will be visible on page.
+      sockets: true // use sockets when available
     },
-    render: {
-      templateContainer: '<ul class="dlgs-list" />',
-      template: 
+    render: { // Render options for commentaries
+      templateContainer: '<ul class="dlgs-list" />', // Container for commentaries
+      template: // Template for each commentary
 '<li>\
   <section class="dlgs-comment">\
     <a class="dlgs-participant-website" >\
@@ -72,24 +80,24 @@
     <div class="dlgs-comment-body" />\
   </section>\
 </li>',
-      selectors: {
-        name: 'a.dlgs-participant-name', // 
-        website: 'a.dlgs-participant-website', // 
+      selectors: { // Selectors for main elements which dialogues expects
+        name: 'a.dlgs-participant-name',
+        website: 'a.dlgs-participant-website',
         icon: 'img.dlgs-participant-avatar',
         date: 'span.dlgs-comment-date',
         body: 'div.dlgs-comment-body',
         commentLink: 'a.dlgs-comment-link' 
       }
     },
-    formRender: {
-      templatePlaceholder:
+    formRender: { // Render options for form
+      templatePlaceholder: // Placeholder for form
 '<div style="text-align: center;">\
   <a href class="btn btn-primary btn-lg" style="width:80%;">Reply</button>\
 </div>',
-      placeholderSelectors: {
-        button: 'a'
+      placeholderSelectors: { 
+        button: 'a' // Add commentary button.
       },
-      template: 
+      template: // Template for comment form
 '<form role="form" class="dlgs-form">\
   <div class="row">\
     <div class="col-md-4">\
@@ -124,7 +132,7 @@
     <button type="button" class="btn btn-default">Cancel</button>\
   </div>\
 </form>',
-      selectors: {
+      selectors: { // Selectors for main elements on form
         username: 'input[name=dlgs-participant-name]',
         email: 'input[name=dlgs-participant-email]',
         website: 'input[name=dlgs-participant-website]',
@@ -135,9 +143,9 @@
         preview: 'div.dlgs-comment-preview'
       }
     },
-    dateFormatter: defaultDateFormatter,
-    bodyFormatter: defaultBodyFormatter,
-    resources: {
+    dateFormatter: defaultDateFormatter, // Formatter function for dates
+    bodyFormatter: defaultBodyFormatter, // Formatter function for comment body
+    resources: { // String resources
       anonymous: 'Anonymous'
     }
   };
@@ -196,24 +204,41 @@
     this._options = options;
     this._load = options.load;
     this._render = options.render;
+    this._commentsContainer = $(this._render.templateContainer).appendTo(this.$el);
 
-    var getCommentsContainer = function() {
-      return this._commentsContainer || (this._commentsContainer = $(this._render.templateContainer).appendTo(this.$el));
-    }.bind(this);
+    var useSockets = window.io && options.load.sockets;
 
-    getCommentsContainer();
-
-    var scrollToBottom = function() {
-      var container = getCommentsContainer();
+    /*
+    * If comments container supports scrolling - scroll it to last element.
+    * This method is useful when we add comments.
+    */
+    var _scrollToBottom = function() {
+      var container = this._commentsContainer ;
       if (container.get(0).scrollHeight > container.height()) {
         container.animate({ scrollTop: container.get(0).scrollHeight }, "slow");
       }
     }.bind(this);
 
     /*
+    * Post comment to server.
+    */
+    var _postComment = function(comment) {
+      var data = JSON.stringify({ 
+        id: this._options.id, 
+        comment: comment, 
+        sendUpdate: !useSockets 
+      });
+      return $.post(
+        this._options.server, 
+        data, 
+        null,  // callback is null
+        'json');
+    }.bind(this);
+
+    /*
      * Render comment and append element to main element this.el
     */ 
-    var renderComment = function(comment, index, container) {
+    var _renderComment = function(comment, index, container) {
       var selectors = this._render.selectors;
 
       var commentSection = $(this._render.template)
@@ -256,19 +281,19 @@
       $(selectors.body, commentSection)
         .html(this._options.bodyFormatter(comment.body));
 
-      getCommentsContainer().append(commentSection);
+      this._commentsContainer.append(commentSection);
     }.bind(this);
 
-    var renderComments = function(comments) {
+    var _renderComments = function(comments) {
       for (var i = 0; i < comments.length; i++) {
-        renderComment(comments[i]);
+        _renderComment(comments[i]);
       }
     }
 
     /*
     * Render form under comments
     */
-    var renderForm = function() {
+    var _renderForm = function() {
       var formRender = this._options.formRender;
       var bodyFormatter = this._options.bodyFormatter;
 
@@ -305,7 +330,7 @@
           name: $(formRender.selectors.username, form).val(),
           email: $(formRender.selectors.email, form).val(),
           website: $(formRender.selectors.website, form).val()
-        }));
+        }), document.location.hostname);
       });
 
       $(formRender.placeholderSelectors.button, placeholder)
@@ -352,13 +377,15 @@
             body: $(formRender.selectors.body, form).val()
           }
 
-          this.add(comment)
+          _postComment(comment)
             .done(function(result) {
               form.hide();
               placeholder.fadeIn();
-              renderComments(result);
+              if (!useSockets) {
+                _renderComments(result);
+              }
               $(formRender.selectors.body, form).val('').trigger('input');
-              scrollToBottom();
+              _scrollToBottom();
             }.bind(this))
             .fail(function(req, error, status) {
               if (this._options.debug) {
@@ -380,11 +407,22 @@
     this.load = function() {
       return $.getJSON(this._options.server, { id: this._options.id }, function(data) {
         this.$el.hide();
-        renderComments(data);
+        _renderComments(data);
         if (this._options.formRender) {
-          renderForm();
+          _renderForm();
         }
         this.$el.fadeIn();
+
+        if (useSockets) {
+          var socket = io.connect(this._options.server);
+          socket.on('update', function(update) {
+            if (update.id === this._options.id) {
+              _renderComments(update.comments);
+            }
+          }.bind(this));
+          socket.emit('subscribe', { id: this._options.id });
+        }
+
       }.bind(this))
       .fail(function(req, error, status) {
         if (this._options.debug) {
@@ -392,11 +430,6 @@
         }
         /* TODO: show error to user. */
       }.bind(this));
-    }.bind(this);
-
-    this.add = function(comment) {
-      var data = JSON.stringify({ id: this._options.id, comment: comment });
-      return $.post(this._options.server, data, null, 'json');
     }.bind(this);
 
     if (this._load && !this._load.manual) {
