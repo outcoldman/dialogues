@@ -201,6 +201,8 @@
       return this._commentsContainer || (this._commentsContainer = $(this._render.templateContainer).appendTo(this.$el));
     }.bind(this);
 
+    getCommentsContainer();
+
     var scrollToBottom = function() {
       var container = getCommentsContainer();
       if (container.get(0).scrollHeight > container.height()) {

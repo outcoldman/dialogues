@@ -11,7 +11,10 @@
     "url": "git@github.com:nko4/outcold.git"
   },
   "dependencies": {
-    "nko": "*"
+    "nko": "*",
+    "mongoose": "*",
+    "gravatar": "*",
+    "underscore": "*"
   },
   "engines": {
     "node": "0.10.x"
