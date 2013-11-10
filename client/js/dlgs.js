@@ -219,6 +219,7 @@
     var useSockets = window.io && options.load.sockets;
     var _preloadedComments = [];
     var _formIsOpened = false;
+    var _updateTokens = {};
 
     /*
     * If comments container supports scrolling - scroll it to last element.
@@ -452,7 +453,16 @@
               if (_preloadedComments.length > 0) {
                 _renderPreloadedComments();
               }
-              _renderComments(result);
+              if (result.updateToken) {
+                var updateToken = getCookie(this._options.id + '_updateToken');
+                if (updateToken) {
+                  updateToken = JSON.parse(updateToken);
+                } else{
+                  updateToken = {};
+                }
+                setCookie(this._options.id + '_updateToken', )
+              }
+              _renderComments(result.comments);
               $(formRender.selectors.body, form).val('').trigger('input');
               _scrollToBottom();
             }.bind(this))
