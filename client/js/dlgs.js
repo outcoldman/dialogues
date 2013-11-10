@@ -340,7 +340,11 @@
           }
         }
       }.bind(this));
-      socket.emit('subscribe', { id: this._options.id });
+      var onConnection = function() {
+        socket.emit('subscribe', { id: this._options.id });
+      }.bind(this);
+      socket.on('connect', onConnection);
+      socket.on('reconnect', onConnection);
     }.bind(this);
 
     /*
