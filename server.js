@@ -8,7 +8,14 @@ var http = require('http'),
     path = require('path'),
     url = require('url'),
     socket = require('socket.io')
-    dialogues = require('./lib/dialogues');
+    dialogues = require('./lib/dialogues')({
+      storage: {
+        type: isProduction ? 'mongodb' : 'memory',
+        options: {
+          connectionString: 'mongodb://dialogues-user:dialogues-password@ds053778.mongolab.com:53778/dialogues-nko2013'
+        }
+      }
+    });
 
 var port = (isProduction ? 80 : 8000);
 
@@ -27,7 +34,7 @@ app = http.createServer(function (req, res) {
     console.log('Handling request: ' + req.url);
   }
   if (url.parse(req.url).pathname === '/api/dialogues/') {
-    dialogues.httpHandle(req, res);
+    dialogues.httpHandler(req, res);
   } else if (req.url === '/scripts/dlgs.js') {
     staticResourceHandler(res, './client/js/dlgs.js', 'text/javascript');
   } else if (req.url === '/' || req.url.indexOf('.html') >= 0) {
@@ -52,5 +59,5 @@ app = http.createServer(function (req, res) {
 
 io = socket.listen(app);
 io.of('/api/dialogues/').on('connection', function (socket) {
-  dialogues.socketHandle(socket);
+  dialogues.socketHandler(socket);
 });

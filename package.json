@@ -15,7 +15,8 @@
     "mongoose": "*",
     "gravatar": "*",
     "underscore": "*",
-    "socket.io": "*"
+    "socket.io": "*",
+    "async": "*"
   },
   "engines": {
     "node": "0.10.x"
