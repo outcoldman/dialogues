@@ -37,7 +37,8 @@
   var module = {};
   var defaultOptions = {
     $el: null,
-    id: getDocumentUrl(),
+    host: document.location.hostname,
+    id: document.location.pathname,
     server: '/api/dialogues/', // url to load dialogues
     debug: false, // enable additional logging
     load: { // loading settings
@@ -224,7 +225,8 @@
     */
     var _postComment = function(comment) {
       var data = JSON.stringify({ 
-        id: this._options.id, 
+        id: this._options.id,
+        host: this._options.host,
         comment: comment
       });
       return $.post(
@@ -466,7 +468,7 @@
      * Load commentaries from server
     */
     this.load = function() {
-      return $.getJSON(this._options.server, { id: this._options.id }, function(data) {
+      return $.getJSON(this._options.server, { id: this._options.id, host: this._options.host }, function(data) {
         this.$el.hide();
         _renderComments(data);
         

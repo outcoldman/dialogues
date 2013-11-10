@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "nko": "*",
-    "mongoose": "*",
+    "mongodb": "*",
     "gravatar": "*",
     "underscore": "*",
     "socket.io": "*",
