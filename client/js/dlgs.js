@@ -187,6 +187,74 @@
     return a;
   }
 
+  var SocketsClient = function(server) {
+
+    var socket = null;
+
+    var subscriptions = {};
+
+    var _getDialogueId = function(dialogue) {
+      return JSON.stringify(dialogue);
+    }
+
+    var _onConnect = function() {
+      for (var id in subscriptions) {
+        if (subscriptions.hasOwnProperty(id)) {
+          _subscribe(id);
+        }
+      }
+    }
+
+    var _onUpdate = function(update) {
+      var id = _getDialogueId(update.dialogue);
+      if (subscriptions[id]) {
+        $.each(subscriptions[id], function(index, callback) {
+          callback(update);
+        })
+      }
+    }
+
+    var _subscribe = function(id) {
+      socket.emit('subscribe', JSON.parse(id));
+    }
+
+    this.subscribe = function(dialogue, callback) {
+
+      var id = _getDialogueId(dialogue);
+      if (!subscriptions[id]) {
+        subscriptions[id] = [];
+      } 
+      subscriptions[id].push(callback);
+
+      if (!socket) {
+        socket = io.connect(server);
+
+        socket.on('update', _onUpdate);
+
+        socket.on('connect', _onConnect);
+        socket.on('reconnect', _onConnect);
+      } else {
+        _subscribe(id);
+      }
+    }
+  }
+
+  SocketsClient.supportSockets = function() {
+    return typeof window.io === 'object';
+  }
+
+  SocketsClient.getClient = function(server) {
+    if (!this.instances) {
+      this.instances = {};
+    }
+
+    if (!this.instances[server]) {
+      SocketsClient.instances[server] = new SocketsClient(server);
+    }
+
+    return SocketsClient.instances[server];
+  }
+
   /*
    * Render method returns instance of this type, which can be used to 
    * manipulate with commentaries on the page.
@@ -205,7 +273,6 @@
     this._commentsContainer = $(this._render.templateContainer).appendTo(this.$el);
     this._preloadedCommentsButton = null;
 
-    var useSockets = window.io && options.load.sockets;
     var _preloadedComments = [];
     var _formIsOpened = false;
 
@@ -308,47 +375,6 @@
       }
     }.bind(this);
 
-    var _socketConnect = function() {
-      var socket = io.connect(this._options.server);
-      socket.on('update', function(update) {
-        if (update.id === this._options.id) {
-          // Remove first all comments which already were rendered
-          this._commentsContainer.children().each(function() {
-            var id = $(this).data('comment').id;
-            for (var i = (update.comments.length - 1); i >= 0; i--) {
-              if (update.comments[i].id === id) {
-                update.comments.splice(i, 1);
-              }
-            }
-          });
-
-          if (_formIsOpened || _preloadedComments.length > 0) {
-            // Push all un rendered comments 
-            for (var i = 0; i < update.comments.length; i++) {
-              _preloadedComments.push(update.comments[i]);
-            }
-
-            if (_preloadedComments.length > 0 && !this._preloadedCommentsButton) {
-              var render = this._options.preloadRender;
-              this._preloadedCommentsButton = $(render.template).insertAfter(this._commentsContainer);
-              $(render.selectors.button, this._preloadedCommentsButton)
-                .click(function() {
-                  _renderPreloadedComments();
-                  return false;
-                }.bind(this));
-            }
-          } else {
-            _renderComments(update.comments);
-          }
-        }
-      }.bind(this));
-      var onConnection = function() {
-        socket.emit('subscribe', { id: this._options.id });
-      }.bind(this);
-      socket.on('connect', onConnection);
-      socket.on('reconnect', onConnection);
-    }.bind(this);
-
     /*
     * Render form under comments
     */
@@ -357,7 +383,7 @@
       var bodyFormatter = this._options.bodyFormatter;
 
       var placeholder = $(formRender.templatePlaceholder);
-      var form = $(this._options.formRender.template.replace(/{id}/g, this._options.id)).hide();
+      var form = $(this._options.formRender.template.replace(/{id}/g, this._options.host + '_' + this._options.id)).hide();
 
       $(formRender.selectors.body, form).on('input', function() {
         if (formRender.selectors.preview) {
@@ -478,8 +504,40 @@
 
         this.$el.fadeIn();
 
-        if (useSockets) {
-          _socketConnect();
+        if (SocketsClient.supportSockets && this._options.load.sockets) {
+          SocketsClient.getClient(this._options.server).subscribe({
+            host: this._options.host,
+            id: this._options.id
+          },
+          function(update) {
+            this._commentsContainer.children().each(function() {
+              var id = $(this).data('comment').id;
+              for (var i = (update.comments.length - 1); i >= 0; i--) {
+                if (update.comments[i].id === id) {
+                  update.comments.splice(i, 1);
+                }
+              }
+            });
+
+            if (_formIsOpened || _preloadedComments.length > 0) {
+              // Push all un rendered comments 
+              for (var i = 0; i < update.comments.length; i++) {
+                _preloadedComments.push(update.comments[i]);
+              }
+
+              if (_preloadedComments.length > 0 && !this._preloadedCommentsButton) {
+                var render = this._options.preloadRender;
+                this._preloadedCommentsButton = $(render.template).insertAfter(this._commentsContainer);
+                $(render.selectors.button, this._preloadedCommentsButton)
+                  .click(function() {
+                    _renderPreloadedComments();
+                    return false;
+                  }.bind(this));
+              }
+            } else {
+              _renderComments(update.comments);
+            }
+          }.bind(this));
         }
 
       }.bind(this))
