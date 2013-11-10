@@ -89,6 +89,15 @@
         commentLink: 'a.dlgs-comment-link' 
       }
     },
+    preloadRender: {
+      template: 
+'<div style="text-align: center;">\
+  <a href class="btn btn-primary btn-lg" style="width:80%;">New comments loaded...</button>\
+</div>',
+      selectors: {
+        button: 'a'
+      }
+    },
     formRender: { // Render options for form
       templatePlaceholder: // Placeholder for form
 '<div style="text-align: center;">\
@@ -205,8 +214,11 @@
     this._load = options.load;
     this._render = options.render;
     this._commentsContainer = $(this._render.templateContainer).appendTo(this.$el);
+    this._preloadedCommentsButton = null;
 
     var useSockets = window.io && options.load.sockets;
+    var _preloadedComments = [];
+    var _formIsOpened = false;
 
     /*
     * If comments container supports scrolling - scroll it to last element.
@@ -225,8 +237,7 @@
     var _postComment = function(comment) {
       var data = JSON.stringify({ 
         id: this._options.id, 
-        comment: comment, 
-        sendUpdate: !useSockets 
+        comment: comment
       });
       return $.post(
         this._options.server, 
@@ -236,59 +247,113 @@
     }.bind(this);
 
     /*
-     * Render comment and append element to main element this.el
+     * Render comments 
     */ 
-    var _renderComment = function(comment, index, container) {
-      var selectors = this._render.selectors;
-
-      var commentSection = $(this._render.template)
-        .data('comment', comment);
-
-      var name = comment.name || this._options.resources.anonymous;
-
-      if (comment.icon && selectors.icon) {
-        $(selectors.icon, commentSection)
-          .attr({
-            alt: name,
-            src: comment.icon
-          });
-      }
-      
-      if (comment.website) {
-        $(selectors.website, commentSection).attr({ href: comment.website });
-      } else {
-        $(selectors.website, commentSection).attr({ disabled: true });
-      }
-
-      $(selectors.name, commentSection).text(name);
-
-      if(selectors.date && comment.date) {
-        var date = comment.date;
-        if (this._options.dateFormatter) {
-          date = this._options.dateFormatter(date);
-        }
-        $(selectors.date, commentSection).text(date);
-      }
-
-      if (selectors.commentLink && comment.id) {
-        var sectionId = 'comment_' + comment.id;
-        $(selectors.commentLink, commentSection).attr({
-          href: getDocumentUrl() + '#' + sectionId
-        });
-        commentSection.attr({ id: sectionId });
-      }
-      
-      $(selectors.body, commentSection)
-        .html(this._options.bodyFormatter(comment.body));
-
-      this._commentsContainer.append(commentSection);
-    }.bind(this);
-
     var _renderComments = function(comments) {
       for (var i = 0; i < comments.length; i++) {
-        _renderComment(comments[i]);
+        var comment = comments[i];
+        var selectors = this._render.selectors;
+
+        var commentSection = $(this._render.template)
+          .data('comment', comment);
+
+        var name = comment.name || this._options.resources.anonymous;
+
+        if (comment.icon && selectors.icon) {
+          $(selectors.icon, commentSection)
+            .attr({
+              alt: name,
+              src: comment.icon
+            });
+        }
+        
+        if (comment.website) {
+          $(selectors.website, commentSection).attr({ href: comment.website });
+        } else {
+          $(selectors.website, commentSection).attr({ disabled: true });
+        }
+
+        $(selectors.name, commentSection).text(name);
+
+        if(selectors.date && comment.date) {
+          var date = comment.date;
+          if (this._options.dateFormatter) {
+            date = this._options.dateFormatter(date);
+          }
+          $(selectors.date, commentSection).text(date);
+        }
+
+        if (selectors.commentLink && comment.id) {
+          var sectionId = 'comment_' + comment.id;
+          $(selectors.commentLink, commentSection).attr({
+            href: getDocumentUrl() + '#' + sectionId
+          });
+          commentSection.attr({ id: sectionId });
+        }
+        
+        $(selectors.body, commentSection)
+          .html(this._options.bodyFormatter(comment.body));
+
+        this._commentsContainer.append(commentSection);
       }
-    }
+    }.bind(this);
+
+    /*
+    * When user is publishing commentaries we don't want to distract him 
+    * by adding new commentaries, this is why we preload them and render
+    * only when user click on post comment or when he click on show
+    * new comments button.
+    */
+    var _renderPreloadedComments = function() {
+      // Let's sort it first, who knows how we can get these updates.
+      _preloadedComments.sort(function(a, b) {
+        return a.date - b.date;
+      });
+      _renderComments(_preloadedComments);
+      _scrollToBottom();
+      if (this._preloadedCommentsButton) {
+        this._preloadedCommentsButton.remove();
+        _preloadedComments = [];
+        this._preloadedCommentsButton = null;
+      }
+    }.bind(this);
+
+    var _socketConnect = function() {
+      var socket = io.connect(this._options.server);
+      socket.on('update', function(update) {
+        if (update.id === this._options.id) {
+          // Remove first all comments which already were rendered
+          this._commentsContainer.children().each(function() {
+            var id = $(this).data('comment').id;
+            for (var i = (update.comments.length - 1); i >= 0; i--) {
+              if (update.comments[i].id === id) {
+                update.comments.splice(i, 1);
+              }
+            }
+          });
+
+          if (_formIsOpened || _preloadedComments.length > 0) {
+            // Push all un rendered comments 
+            for (var i = 0; i < update.comments.length; i++) {
+              _preloadedComments.push(update.comments[i]);
+            }
+
+            if (_preloadedComments.length > 0 && !this._preloadedCommentsButton) {
+              var render = this._options.preloadRender;
+              this._preloadedCommentsButton = $(render.template).insertAfter(this._commentsContainer);
+              $(render.selectors.button, this._preloadedCommentsButton)
+                .click(function() {
+                  _renderPreloadedComments();
+                  return false;
+                }.bind(this));
+            }
+          } else {
+            _renderComments(update.comments);
+          }
+        }
+      }.bind(this));
+      socket.emit('subscribe', { id: this._options.id });
+    }.bind(this);
 
     /*
     * Render form under comments
@@ -355,6 +420,7 @@
             }, 'slow');
           }
           $(formRender.selectors.body, form).focus();
+          _formIsOpened = true;
           return false;
         }.bind(this));
 
@@ -363,6 +429,7 @@
           form.hide();
           placeholder.fadeIn();
           $(formRender.selectors.body, form).val('').trigger('input');
+          _formIsOpened = false;
           return false;
         }.bind(this));
 
@@ -380,10 +447,12 @@
           _postComment(comment)
             .done(function(result) {
               form.hide();
+              _formIsOpened = false;
               placeholder.fadeIn();
-              if (!useSockets) {
-                _renderComments(result);
+              if (_preloadedComments.length > 0) {
+                _renderPreloadedComments();
               }
+              _renderComments(result);
               $(formRender.selectors.body, form).val('').trigger('input');
               _scrollToBottom();
             }.bind(this))
@@ -408,19 +477,15 @@
       return $.getJSON(this._options.server, { id: this._options.id }, function(data) {
         this.$el.hide();
         _renderComments(data);
+        
         if (this._options.formRender) {
           _renderForm();
         }
+
         this.$el.fadeIn();
 
         if (useSockets) {
-          var socket = io.connect(this._options.server);
-          socket.on('update', function(update) {
-            if (update.id === this._options.id) {
-              _renderComments(update.comments);
-            }
-          }.bind(this));
-          socket.emit('subscribe', { id: this._options.id });
+          _socketConnect();
         }
 
       }.bind(this))
