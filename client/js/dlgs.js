@@ -107,11 +107,11 @@
         <label for="dlgs-participant-website-{id}">Website:</label>\
         <input type="url" class="form-control" name="dlgs-participant-website" id="dlgs-participant-website-{id}" placeholder="Enter website">\
       </div>\
-      <div class="checkbox">\
+      <!--<div class="checkbox">\
         <label>\
           <input type="checkbox" name="dlgs-participant-subscription" id="dlgs-participant-subscription-{id}"> Notify about new comments\
         </label>\
-      </div>\
+      </div>-->\
     </div>\
     <div class="col-md-8">\
       <div class="form-group">\
@@ -130,7 +130,7 @@
         username: 'input[name=dlgs-participant-name]',
         email: 'input[name=dlgs-participant-email]',
         website: 'input[name=dlgs-participant-website]',
-        subscription: 'input[name=dlgs-participant-subscription]',
+        // subscription: 'input[name=dlgs-participant-subscription]',
         body: 'textarea[name=dlgs-comment-body]',
         submit: 'button[type=submit]',
         cancel: 'button[type=button]',
@@ -434,7 +434,7 @@
             name: $(formRender.selectors.username, form).val(),
             website: $(formRender.selectors.website, form).val(),
             email: $(formRender.selectors.email, form).val(),
-            subscription: $(formRender.selectors.subscription, form).prop('checked'),
+            subscription: $(formRender.selectors.subscription, form).prop('checked') || false,
             body: $(formRender.selectors.body, form).val()
           }
 
