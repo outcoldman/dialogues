@@ -16,7 +16,8 @@
     "gravatar": "*",
     "underscore": "*",
     "socket.io": "*",
-    "async": "*"
+    "async": "*",
+    "akismet-api": "*"
   },
   "engines": {
     "node": "0.10.x"

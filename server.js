@@ -16,6 +16,16 @@ var http = require('http'),
           connectionString: 'mongodb://dialogues-user:dialogues-password@ds053778.mongolab.com:53778/dialogues-nko2013' // for mongodb storage
         }
       }
+      // , // Example how to enable akismet anti-spam module 
+      // 'set-processors': [
+      //   { 
+      //     type: 'akismet', 
+      //     options: {
+      //       blog: 'http://outcold.2013.nodeknockout.com/',
+      //       key: 'X'
+      //     } 
+      //   }
+      // ]
     });
 
 var port = (isProduction ? 80 : 8000);
