@@ -12,7 +12,8 @@ var http = require('http'),
       storage: {
         type: isProduction ? 'mongodb' : 'memory',
         options: {
-          connectionString: 'mongodb://dialogues-user:dialogues-password@ds053778.mongolab.com:53778/dialogues-nko2013'
+          path: path.join(__dirname, '_storage'), // for file storage 
+          connectionString: 'mongodb://dialogues-user:dialogues-password@ds053778.mongolab.com:53778/dialogues-nko2013' // for mongodb storage
         }
       }
     });
