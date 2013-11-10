@@ -106,7 +106,7 @@
     </style>
     <script>
       var customDateFormatter = function(date) {
-        return moment.unix(date + (new Date()).getTimezoneOffset()*60).fromNow();
+        return moment(date).fromNow();
       };
 
       var markdownBodyFormatter = function(text) {

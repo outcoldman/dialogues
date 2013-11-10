@@ -8,9 +8,7 @@
   * Default date formatter just returns date in locale string
   */ 
   var defaultDateFormatter = function(date) {
-    var d = new Date();
-    d.setTime(date + d.getTimezoneOffset() * 60);
-    return d.toLocaleString();
+    return date.toLocaleString();
   }
 
   /*
@@ -276,7 +274,7 @@
         $(selectors.name, commentSection).text(name);
 
         if(selectors.date && comment.date) {
-          var date = comment.date;
+          var date = new Date(comment.date);
           if (this._options.dateFormatter) {
             date = this._options.dateFormatter(date);
           }
