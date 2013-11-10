@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>One page test</title>
+    <title>Project Dialogues</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/styles/github.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
@@ -99,7 +99,7 @@
               text-align: right;
           }
 
-        #example1 .dlgs-list, #example2 .dlgs-list {
+        #example1 .dlgs-list {
           max-height: 300px;
           overflow: auto;
         }
@@ -136,31 +136,24 @@
       <!-- http://blog.nodeknockout.com/post/35364532732/protip-add-the-vote-ko-badge-to-your-app -->
       <!-- <iframe src="http://nodeknockout.com/iframe/outcold" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe> -->
 
-      <article><h1>Project Dialogues</h1>
-<p>Hi there. I'm Den (<a href="http://outcoldman.com">outcoldman</a>) and this is project Dialogues, which participates in <a href="http://nodeknockout.com/">Node.js Knockout 2013</a>.</p>
-<p>Do you like <a href="http://disqus.com/">Disqus</a>? I do. It is pretty cool project, allows you to add support for commentaries to any page in a second. But there are couple things which I don't like. I want to have an option to do some customization for how they render comments, how they store them, and of course I want to have <a href="http://daringfireball.net/projects/markdown/">markdown</a> support!</p>
-<p>So, this is it. Project Dialogues. It is not a completed project (this is hackathon what do you expect from 2 days of coding?!), but much more than just a prototype. </p>
-<p>So, let's take a look what it can do. </p>
+      <article>
 
-<div class="dlgs-comment-preview"><h2>Example #1</h2>
-<p>By default project Dialogues renders body commentaries as a simple text, but it is not hard at all to add support for markdown, just specify your body formatter like that (in my case I used <a href="https://github.com/chjj/marked">marked</a> library for rendering). I also used <a href="http://momentjs.com/">momentjs</a> to format dates in more human readable format. </p>
-<pre><code>dialogues.render({
-  dateFormatter: <span class="keyword">function</span>(date) {
-    <span class="keyword">var</span> currentDate = <span class="keyword">new</span> Date();
-    <span class="keyword">var</span> timezoneOffset = currentDate.getTimezoneOffset() * <span class="number">60</span>;
-    <span class="keyword">return</span> moment.unix(date + timezoneOffset).fromNow();
-  },
-  bodyFormatter: <span class="keyword">function</span>(text) {
-    <span class="keyword">return</span> marked(text);
-  }
-});</code></pre>
-<h3>Preview Example #1</h3>
+
+<h1 id="project-dialogues">Project Dialogues</h1>
+<p>Hi there, I'm Den (<a href="http://outcoldman.com">outcoldman</a>) and this is project Dialogues (my first node.js project!). Do you like <a href="http://disqus.com/">Disqus</a>? I do. It gives you very simple way to add support of commentaries on your website or blog. But it is too restricted, it does not allow you to change it in a way as you want it (I want to use <a href="http://daringfireball.net/projects/markdown/">markdown</a>!). So this is why I decided to create project Dialogues. </p>
+<p>Example below, all the information after example, also you can take a look on example on jsfiddle: <a href="http://jsfiddle.net/Wh5q7/3/">http://jsfiddle.net/Wh5q7/3/</a>, which uses current server for storing commentaries (take a look how easy is to integrate it!).</p>
+
+<p>And if you like it, please vote for it (this project is participating in <a href="http://nodeknockout.com/">http://nodeknockout.com/</a> competition):</p>
+
+<iframe src="http://nodeknockout.com/iframe/outcold" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe>
+
+<h3>Example</h3>
 
 <div id="example1" class="dlgs">
 <script type="text/javascript">
   (function(){"use strict";
     dialogues.render({
-      id: 'my_blog_1',
+      id: 'example_1',
       debug: true,
       load: {
         delay: false
@@ -172,56 +165,80 @@
 </script>
 </div>
 
-<h2>Example #2</h2>
-<p>And it is not hard at all to place more than one dialogues on one page. Just specify for server different identities for Dialogues instances. And in this example I also specified that I want to load commentaries only when user will scroll to the place where we want to see them:</p>
-<pre><code><span class="tag">dialogues</span><span class="class">.render</span>(<span class="rules">{
-  <span class="rule"><span class="attribute">id</span>:<span class="value"> <span class="string">'my_blog_1'</span>,
-  load: {
-    delay: true
-  }</span></span></span>
-});</code></pre>
-<h3>Preview Example #2</h3>
+<h2 id="what-is-the-project-dialogues">What is the Project Dialogues?</h2>
+<p>This is how I see it:</p>
+<ol>
+<li>Node.js server for handling commentaries.</li>
+<li>Client library for communicating with server and rendering commentaries.</li>
+<li>Management system for Dialogues (unspam/delete/etc for administrators).</li>
+<li>At the end I'd like to make it as service in cloud with bunch of customizations and different themes (especially if I will get one of the prizes - I think this will be a good way of using free cloud services). </li>
+</ol>
+<p>This means that at the end you will have a choice to have your own server with project Dialogues or use service.</p>
+<p>I did not have plans to build parts 3 and 4 in time of <a href="http://nodeknockout.com/">Node.js Knockout</a> hackathon. But a lot of features for 1 and 2 already implemented.</p>
+<h3 id="server-side-features">Server side features</h3>
+<ul>
+<li>Support different storages: mongodb, files and in-memory storages. The last one is useful only for development. And of course you can write your own storage.</li>
+<li>Supports different <code>processors</code> which will be invoked before saving commentary to db (useful for checking commentaries for spam) and before sending to client (useful for setting gravatar icon). </li>
+</ul>
+<h3 id="client-side-features">Client side features</h3>
+<ul>
+<li>You can renders commentaries anywhere on page (take a look on <a href="http://jsfiddle.net/Wh5q7/3/">http://jsfiddle.net/Wh5q7/3/</a>).</li>
+<li>Each block of commentaries has identity with <code>host</code> and <code>id</code>, you can specify your own identities or script will use <code>document.location.host</code> and <code>document.location.path</code> for them.</li>
+<li>By default all commentaries will be rendered as plain text, but it is easy to change (examples on this page and on jsfiddle use markdown).</li>
+<li>I use <a href="http://socket.io/">socket.io</a> for instance commentary updates (just try to open this page in two tabs and try to add commentary on one of them).</li>
+<li>Right now user information is stored in cookie per domain (so you will not need to re-enter it after you will come back on this page).</li>
+<li>I use <code>localStorage</code> for backing up your commentaries, so if your browser crashes or you accidentally close browser - don't worry, just open page and continue to write commentary.</li>
+<li>You can render as many commentary blocks on your page as you want (so if you use tabs or you write SPA - you can do it very easy).</li>
+<li>Client side supports a lot of different customizations, you can overwrite templates, behaviors and CSS classes (documentation is coming).</li>
+<li>As you saw in first example on this page - it supports scrolling (example on the bottom does not have scrolls).</li>
+<li>Delay loading (commentaries will not be loaded until user will not scroll to them), block with commentaries below uses delay loading.</li>
+</ul>
+<h3 id="todos">TODOs</h3>
+<p>And of course I have a lot of plans for future:</p>
+<ul>
+<li>Add <em>edit tokens</em>, so users will have a chance to edit their commentaries after posing them.</li>
+<li>Add support for oath. </li>
+<li>Implement notification module, which will send emails with updates.</li>
+<li>Implement administrative portal for commentaries.</li>
+<li>Publish npm module (I don't want to do it right now, because a lot of things are going to be changed in next month, so I want first to get stable API and after this publish npm module).</li>
+<li>Themes, themes, themes.</li>
+</ul>
+<h3 id="thank-you-oss">Thank you OSS!</h3>
+<ul>
+<li>npm install <a href="https://github.com/mongodb/node-mongodb-native">mongodb</a> - requirement only if you need mongodb as a storage.</li>
+<li>npm install <a href="https://github.com/emerleite/node-gravatar">gravatar</a></li>
+<li>npm install <a href="http://underscorejs.org/">underscore</a></li>
+<li>npm install <a href="file:///Users/dgladkikh/dev/github/nko4/socket.io">socket.io</a> - if you want to support sockets.</li>
+<li>npm install <a href="https://github.com/caolan/async">async</a></li>
+<li>script src="<a href="http://jquery.com">jquery</a>" - client library has dependency on it.</li>
+<li>script src="<a href="file:///Users/dgladkikh/dev/github/nko4/socket.io">socket.io</a>" - not a requirement, if you will not include it - this just means no instant updates.</li>
+<li>script src="<a href="http://momentjs.com/">momentjs</a>" - not a requirement, only if you want to format dates in human readably format as I don on this page.</li>
+<li>script src="<a href="https://github.com/chjj/marked">marked</a>" - not a requirement, only if you want to use markdown for rendering commentaries.</li>
+<li>script src="<a href="http://highlightjs.org/">highlight</a>" - not a requirement, only if want to use nice highlight for code.</li>
+<li>script src="<a href="http://getbootstrap.com/">bootstrap</a>" - at current moment this library kind of depends on bootstrap, if you will not include it - you will need to write your own classes. But this is will be changed in future.</li>
+</ul>
+<h3 id="what-is-next">What is next?</h3>
+<p>Let me know if you are interesting in this project. Leave comment to give me some thoughts about how you want to use it, what are the key features you want to see. And of course, please vote for it (this project is participating in <a href="http://nodeknockout.com/">http://nodeknockout.com/</a> competition): </p>
+<iframe src="http://nodeknockout.com/iframe/outcold" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe> 
+</article>
+
+<h3>Commentaries</h3>
 
 <div id="example2" class="dlgs">
 <script type="text/javascript">
   (function(){"use strict";
     dialogues.render({
-      id: 'my_blog_2',
+      id: 'example_2',
       debug: true,
       load: {
         delay: true
       },
-      dateFormatter: customDateFormatter
+      dateFormatter: customDateFormatter,
+      bodyFormatter: markdownBodyFormatter
     });
   })();
 </script>
 </div>
-
-<h2>How to use Dialogues</h2>
-<h3>Using as a service</h3>
-<p>Let's assume that <code>http://outcold.2013.nodeknockout.com</code> is a service, which provides for us Dialogues, in this case just include <code>dlgs.js</code> on your page:</p>
-<pre><code class="lang-html"><span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"http://outcold.2013.nodeknockout.com/scripts/dlgs.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span></code></pre>
-<p>Add some CSS classes to make it pretty (one of the TODOs after this hackathon will be adding default themes). </p>
-<p>At minimum just add this code to your web page:</p>
-<pre><code><span class="tag">&lt;<span class="title">body</span>&gt;</span>
-
-  <span class="tag">&lt;<span class="title">article</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">h1</span>&gt;</span>Dialogues is easy to use!<span class="tag">&lt;/<span class="title">h1</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">p</span>&gt;</span>Indeed<span class="tag">&lt;/<span class="title">p</span>&gt;</span>
-  <span class="tag">&lt;/<span class="title">article</span>&gt;</span>
-
-  <span class="tag">&lt;<span class="title">script</span>&gt;</span><span class="javascript">
-    (<span class="keyword">function</span>() {
-      dialogues.render();
-    })();
-  </span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
-
-<span class="tag">&lt;/<span class="title">body</span>&gt;</span></code></pre>
-<p>You can take a look on example here: <a href="http://jsfiddle.net/Wh5q7/1/"></a><a href="http://jsfiddle.net/Wh5q7/1/">http://jsfiddle.net/Wh5q7/</a></p>
-<p>And of course all examples below are using Dialogues! </p>
-</article>
-
-
 
 
   </body>
