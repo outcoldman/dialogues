@@ -7,7 +7,7 @@ var SocketsClient = function(server) {
 
   var _getDialogueId = function(dialogue) {
     return JSON.stringify(dialogue);
-  }
+  };
 
   var _onConnect = function() {
     for (var id in _subscriptions) {
@@ -15,7 +15,7 @@ var SocketsClient = function(server) {
         _subscribe(id);
       }
     }
-  }
+  };
 
   var _onUpdate = function(update) {
     var id = _getDialogueId(update.dialogue);
@@ -24,11 +24,11 @@ var SocketsClient = function(server) {
         callback(update);
       })
     }
-  }
+  };
 
   var _subscribe = function(id) {
     _socket.emit('subscribe', JSON.parse(id));
-  }
+  };
 
   this.subscribe = function(dialogue, callback) {
 
@@ -48,7 +48,7 @@ var SocketsClient = function(server) {
     } else {
       _subscribe(id);
     }
-  }
+  };
 }
 
 var instances = {};

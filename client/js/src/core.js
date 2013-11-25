@@ -1,30 +1,17 @@
-define(['./sockets-client'], function(SocketsClient) { 'use strict';
+define([
+  './utils',
+  './sockets-client',
+  './cookies',
+  './backup'
+], 
+function(
+  utils, 
+  SocketsClient, 
+  cookies, 
+  backup
+) { 'use strict';
 
-if (!$) throw new Error('jQuery is not loaded!');
-
-var supportStorage = typeof(Storage)!=="undefined";
-
-/*
-* Get cookie by key
-*/
-var getCookie = function (sKey) {
-  return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
-}
-
-/*
-* Set cookie (without expiration date)
-*/
-var setCookie = function (sKey, sValue, sDomain, sPath) {
-  if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
-  document.cookie = 
-    encodeURIComponent(sKey) + 
-    "=" + 
-    encodeURIComponent(sValue) + 
-    "; expires=Fri, 31 Dec 9999 23:59:59 GMT" + 
-    (sDomain ? "; domain=" + sDomain : "") + 
-    (sPath ? "; path=" + sPath : "");
-  return true;
-}
+if (!$) throw new Error('jQuery is required');
 
 /*
 * Get document url (without hash-tags)
@@ -34,7 +21,6 @@ var getDocumentUrl = function() {
   return url.href.substr(0, url.href.length - url.hash.length);
 }
 
-var module = {};
 var defaultOptions = {
   $el: null,
   host: document.location.hostname,
@@ -148,32 +134,13 @@ var defaultOptions = {
   }
 };
 
-
-
-/*
- * Merge two objects, copy all properties (with nested objects) from b to a.
-*/ 
-var merge = function(a, b) {
-  for (var propertyName in b) {
-    if (b.hasOwnProperty(propertyName)) {
-      var aProperty = typeof a[propertyName];
-      if (aProperty === 'undefined') {
-        a[propertyName] = b[propertyName];
-      } else if (aProperty === 'object') {
-        a[propertyName] = merge(a[propertyName], b[propertyName]);
-      }
-    }
-  }
-  return a;
-}
-
 /*
  * Render method returns instance of this type, which can be used to 
  * manipulate with commentaries on the page.
 */ 
 var DialoguesInstance = function (options) {
 
-  options = options ? merge(options, defaultOptions) : defaultOptions;
+  options = options ? utils.deepExtend(options, defaultOptions) : defaultOptions;
 
   if (options.$el) {
     this.$el = $(options.$el);
@@ -303,18 +270,18 @@ var DialoguesInstance = function (options) {
       if (formRender.selectors.preview) {
         $(formRender.selectors.preview, form).html(bodyFormatter($(this).val()));
       }
-      if (supportStorage) {
+      if (backup.exists) {
         if ($(this).val()) {
-          window.localStorage.setItem(commentStorageId, $(this).val());
+          backup.set(commentStorageId, $(this).val());
         } else {
-          window.localStorage.removeItem(commentStorageId);
+          backup.remove(commentStorageId);
         }
       }
     });
 
     var commentStorageId = this._options.id + '_comment_body';
-    if (supportStorage) {
-      var commentBody = window.localStorage.getItem(commentStorageId);
+    if (backup.exists) {
+      var commentBody = backup.get(commentStorageId);
       if (commentBody) {
          $(formRender.selectors.body, form).val(commentBody).trigger('input');
       }
@@ -325,7 +292,7 @@ var DialoguesInstance = function (options) {
       formRender.selectors.email + ',' +
       formRender.selectors.website, form)
     .on('input', function(){
-      setCookie('dlgs-participant', JSON.stringify({
+      cookies.set('dlgs-participant', JSON.stringify({
         name: $(formRender.selectors.username, form).val(),
         email: $(formRender.selectors.email, form).val(),
         website: $(formRender.selectors.website, form).val()
@@ -337,7 +304,7 @@ var DialoguesInstance = function (options) {
         placeholder.hide();
 
         // Check if this is returned user - just fill the form
-        var author = getCookie('dlgs-participant');
+        var author = cookies.get('dlgs-participant');
         if (author) {
           author = JSON.parse(author)
           $(formRender.selectors.username, form).val(author.name),
