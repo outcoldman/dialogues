@@ -11,7 +11,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.2.9/marked.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
-    <script src="/scripts/dlgs.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.9/require.min.js"></script>
     <style>
       .dlgs {
         width: 80%;
@@ -104,37 +104,9 @@
           overflow: auto;
         }
     </style>
-    <script>
-      var customDateFormatter = function(date) {
-        return moment(date).fromNow();
-      };
-
-      var markdownBodyFormatter = function(text) {
-        return marked(text);
-      };
-
-      (function() {
-        marked.setOptions({
-          highlight: function (code, lang) {
-            try {
-              if (code) {
-                return hljs.highlight(lang, code, false).value;
-              }
-            } catch (e) {
-              console.error(e);
-              return hljs.highlightAuto(code).value;
-            }
-          },
-          sanitize: true
-        });
-       })();
-    </script>
   </head>
   <body>
     <div class="container">
-
-      <!-- http://blog.nodeknockout.com/post/35364532732/protip-add-the-vote-ko-badge-to-your-app -->
-      <!-- <iframe src="http://nodeknockout.com/iframe/outcold" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe> -->
 
       <article>
 
@@ -145,21 +117,7 @@
 
 <h3>Example</h3>
 
-<div id="example1" class="dlgs">
-<script type="text/javascript">
-  (function(){"use strict";
-    dialogues.render({
-      id: 'example_1',
-      debug: true,
-      load: {
-        delay: false
-      },
-      dateFormatter: customDateFormatter,
-      bodyFormatter: markdownBodyFormatter
-    });
-  })();
-</script>
-</div>
+<div id="example1" class="dlgs" ></div>
 
 <h2 id="what-is-the-project-dialogues">What is the Project Dialogues?</h2>
 <p>This is how I see it:</p>
@@ -221,10 +179,40 @@
 
 <h3>Commentaries</h3>
 
-<div id="example2" class="dlgs">
-<script type="text/javascript">
-  (function(){"use strict";
-    dialogues.render({
+<div id="example2" class="dlgs" ></div>
+
+  </body>
+
+<script>
+(function(){'use strict';
+
+  var customDateFormatter = function(date) {
+    return moment(date).fromNow();
+  };
+
+  var markdownBodyFormatter = function(text) {
+    return marked(text);
+  };
+
+  marked.setOptions({
+    highlight: function (code, lang) {
+      try {
+        if (code) {
+          return hljs.highlight(lang, code, false).value;
+        }
+      } catch (e) {
+        console.error(e);
+        return hljs.highlightAuto(code).value;
+      }
+    },
+    sanitize: true
+  });
+
+  require(['./client/js/src/dlgs'], function(Dialogues) {
+    console.log(Dialogues);
+
+    Dialogues.render({
+      $el: '#example2',
       id: 'example_2',
       debug: true,
       load: {
@@ -233,10 +221,19 @@
       dateFormatter: customDateFormatter,
       bodyFormatter: markdownBodyFormatter
     });
-  })();
+
+    Dialogues.render({
+      $el: '#example1',
+      id: 'example_1',
+      debug: true,
+      load: {
+        delay: false
+      },
+      dateFormatter: customDateFormatter,
+      bodyFormatter: markdownBodyFormatter
+    });
+  });
+})();
 </script>
-</div>
 
-
-  </body>
 </html>

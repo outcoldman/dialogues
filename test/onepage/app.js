@@ -39,8 +39,8 @@ app = http.createServer(function (req, res) {
 
   if (url.parse(req.url).pathname === '/api/dialogues/') {
     dialogues.httpHandler(req, res);
-  } else if (req.url === '/scripts/dlgs.js') {
-    staticResourceHandler(res, './../../client/js/dlgs.js', 'text/javascript');
+  } else if (req.url.indexOf('/client/js/') >= 0) {
+    staticResourceHandler(res, './../../' + req.url, 'text/javascript');
   } else if (req.url === '/' || req.url.indexOf('.html') >= 0) {
     staticResourceHandler(res, './page.html');
   } else {
