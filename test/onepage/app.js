@@ -1,19 +1,13 @@
-// https://github.com/nko4/website/blob/master/module/README.md#nodejs-knockout-deploy-check-ins
-require('nko')('BcVz0EJtyJp_foHO');
-
-var isProduction = (process.env.NODE_ENV === 'production');
-
 var http = require('http'),
     fs = require('fs'),
     path = require('path'),
     url = require('url'),
     socket = require('socket.io')
-    dialogues = require('./lib/dialogues')({
+    dialogues = require('./../../lib/dialogues')({
       storage: {
-        type: isProduction ? 'mongodb' : 'memory',
+        type: 'memory', // 'mongodb'
         options: {
-          path: path.join(__dirname, '_storage'), // for file storage 
-          connectionString: 'mongodb://dialogues-user:dialogues-password@ds053778.mongolab.com:53778/dialogues-nko2013' // for mongodb storage
+          path: path.join(__dirname, '.dialogues/storage') // for file storage 
         }
       }
       // , // Example how to enable akismet anti-spam module 
@@ -28,7 +22,7 @@ var http = require('http'),
       // ]
     });
 
-var port = (isProduction ? 80 : 8000);
+var port = 8010;
 
 function staticResourceHandler(responce, resource, contentType) {
   var pagePath = path.join(__dirname, resource);
@@ -41,15 +35,14 @@ function staticResourceHandler(responce, resource, contentType) {
 }
 
 app = http.createServer(function (req, res) {
-  if (!isProduction) {
-    console.log('Handling request: ' + req.url);
-  }
+  console.log('Handling request: ' + req.url);
+
   if (url.parse(req.url).pathname === '/api/dialogues/') {
     dialogues.httpHandler(req, res);
   } else if (req.url === '/scripts/dlgs.js') {
-    staticResourceHandler(res, './client/js/dlgs.js', 'text/javascript');
+    staticResourceHandler(res, './../../client/js/dlgs.js', 'text/javascript');
   } else if (req.url === '/' || req.url.indexOf('.html') >= 0) {
-    staticResourceHandler(res, './test/onepage/page.html');
+    staticResourceHandler(res, './page.html');
   } else {
     res.writeHead(404, {'Content-Type': 'text/html'});
     res.end('<html><body>Not found</body></html>\n');

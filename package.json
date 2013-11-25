@@ -1,23 +1,34 @@
 {
-  "name": "nko4-outcold",
-  "version": "0.0.0",
-  "description": "outcold",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
+  "name": "dialogues",
+  "version": "0.0.1",
+  "author": {
+    "name": "Denis Gladkikh",
+    "email": "outcoldman@gmail.com",
+    "url": "http://outcoldman.com"
   },
+  "description": "Service for providing commentaries.",
+  "main": "lib/dialogues.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:nko4/outcold.git"
+    "url": "git@github.com:outcoldman/dialogues.git"
   },
+  "keywords": [
+    "comments", "commentaries", "dialogues"
+  ],
+  "homepage": "https://github.com/outcoldman/dialogues",
+  "bugs": {
+    "url": "https://github.com/outcoldman/dialogues/issues"
+  },
+  "license": "MIT",
   "dependencies": {
-    "nko": "*",
-    "mongodb": "*",
     "gravatar": "*",
     "underscore": "*",
-    "socket.io": "*",
-    "async": "*",
-    "akismet-api": "*"
+    "async": "*"
+  },
+  "optionalDependencies": {
+    "akismet-api": "*",
+    "mongodb": "*",
+    "socket.io": "*"
   },
   "engines": {
     "node": "0.10.x"
