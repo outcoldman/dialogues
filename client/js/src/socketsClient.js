@@ -1,4 +1,4 @@
-define([], function() { 'use strict';
+define(function() { 'use strict';
 
 var SocketsClient = function(server) {
 

@@ -1,4 +1,4 @@
-define([], function() { 'use strict';
+define(function() { 'use strict';
 
 var _deepExtend = function(a, b) {
   for (var propertyName in b) {
@@ -15,7 +15,11 @@ var _deepExtend = function(a, b) {
 }
 
 return {
-  deepExtend: _deepExtend
+  deepExtend: _deepExtend,
+  getDocumentUrl: function() {
+    var url = document.location;
+    return url.href.substr(0, url.href.length - url.hash.length);
+  }
 };
 
 })

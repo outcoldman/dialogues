@@ -1,6 +1,5 @@
 define([
-  './core.js',
-  './sockets-client.js',
+  './core.js'
   ], function(Dialogues) { 'use strict';
 
 var root = window;

@@ -1,27 +1,27 @@
 define([
+  './jQuery',
   './utils',
-  './sockets-client',
+  './socketsClient',
   './cookies',
-  './backup'
+  './storage',
+  './restClient',
+  './commentsView',
+  './formView',
+  './eventsAggregator'
 ], 
 function(
+  $,
   utils, 
   SocketsClient, 
   cookies, 
-  backup
+  storage,
+  RestClient,
+  CommentsView,
+  FormView,
+  EventsAggregator
 ) { 'use strict';
 
-if (!$) throw new Error('jQuery is required');
-
-/*
-* Get document url (without hash-tags)
-*/
-var getDocumentUrl = function() {
-  var url = document.location;
-  return url.href.substr(0, url.href.length - url.hash.length);
-}
-
-var defaultOptions = {
+var DEFAULT_OPTIONS = {
   $el: null,
   host: document.location.hostname,
   id: document.location.pathname,
@@ -140,7 +140,7 @@ var defaultOptions = {
 */ 
 var DialoguesInstance = function (options) {
 
-  options = options ? utils.deepExtend(options, defaultOptions) : defaultOptions;
+  options = options ? utils.deepExtend(options, DEFAULT_OPTIONS) : DEFAULT_OPTIONS;
 
   if (options.$el) {
     this.$el = $(options.$el);
@@ -157,84 +157,11 @@ var DialoguesInstance = function (options) {
   var _preloadedComments = [];
   var _formIsOpened = false;
 
-  /*
-  * If comments container supports scrolling - scroll it to last element.
-  * This method is useful when we add comments.
-  */
-  var _scrollToBottom = function() {
-    var container = this._commentsContainer ;
-    if (container.get(0).scrollHeight > container.height()) {
-      container.animate({ scrollTop: container.get(0).scrollHeight }, "slow");
-    }
-  }.bind(this);
+  var restClient = new RestClient(options);
+  var commentsView = new CommentsView(options, this._commentsContainer);
+  var formView = null;
 
-  /*
-  * Post comment to server.
-  */
-  var _postComment = function(comment) {
-    var data = JSON.stringify({ 
-      id: this._options.id,
-      host: this._options.host,
-      comment: comment
-    });
-    return $.post(
-      this._options.server, 
-      data, 
-      null,  // callback is null
-      'json');
-  }.bind(this);
-
-  /*
-   * Render comments 
-  */ 
-  var _renderComments = function(comments) {
-    for (var i = 0; i < comments.length; i++) {
-      var comment = comments[i];
-      var selectors = this._render.selectors;
-
-      var commentSection = $(this._render.template)
-        .data('comment', comment);
-
-      var name = comment.name || this._options.resources.anonymous;
-
-      if (comment.icon && selectors.icon) {
-        $(selectors.icon, commentSection)
-          .attr({
-            alt: name,
-            src: comment.icon
-          });
-      }
-      
-      if (comment.website) {
-        $(selectors.website, commentSection).attr({ href: comment.website });
-      } else {
-        $(selectors.website, commentSection).attr({ disabled: true });
-      }
-
-      $(selectors.name, commentSection).text(name);
-
-      if(selectors.date && comment.date) {
-        var date = new Date(comment.date);
-        if (this._options.dateFormatter) {
-          date = this._options.dateFormatter(date);
-        }
-        $(selectors.date, commentSection).text(date);
-      }
-
-      if (selectors.commentLink && comment.id) {
-        var sectionId = 'comment_' + comment.id;
-        $(selectors.commentLink, commentSection).attr({
-          href: getDocumentUrl() + '#' + sectionId
-        });
-        commentSection.attr({ id: sectionId });
-      }
-      
-      $(selectors.body, commentSection)
-        .html(this._options.bodyFormatter(comment.body));
-
-      this._commentsContainer.append(commentSection);
-    }
-  }.bind(this);
+  var eventsAggregator = EventsAggregator.get(options.host, options.id);
 
   /*
   * When user is publishing commentaries we don't want to distract him 
@@ -247,8 +174,8 @@ var DialoguesInstance = function (options) {
     _preloadedComments.sort(function(a, b) {
       return a.date - b.date;
     });
-    _renderComments(_preloadedComments);
-    _scrollToBottom();
+    commentsView.add(_preloadedComments);
+    commentsView.scrollToLatest();
     if (this._preloadedCommentsButton) {
       this._preloadedCommentsButton.remove();
       _preloadedComments = [];
@@ -256,120 +183,13 @@ var DialoguesInstance = function (options) {
     }
   }.bind(this);
 
-  /*
-  * Render form under comments
-  */
-  var _renderForm = function() {
-    var formRender = this._options.formRender;
-    var bodyFormatter = this._options.bodyFormatter;
-
-    var placeholder = $(formRender.templatePlaceholder);
-    var form = $(this._options.formRender.template.replace(/{id}/g, this._options.host + '_' + this._options.id)).hide();
-
-    $(formRender.selectors.body, form).on('input', function() {
-      if (formRender.selectors.preview) {
-        $(formRender.selectors.preview, form).html(bodyFormatter($(this).val()));
-      }
-      if (backup.exists) {
-        if ($(this).val()) {
-          backup.set(commentStorageId, $(this).val());
-        } else {
-          backup.remove(commentStorageId);
-        }
-      }
-    });
-
-    var commentStorageId = this._options.id + '_comment_body';
-    if (backup.exists) {
-      var commentBody = backup.get(commentStorageId);
-      if (commentBody) {
-         $(formRender.selectors.body, form).val(commentBody).trigger('input');
-      }
+  eventsAggregator.subscribe('submitted', function(comment) {
+    if (_preloadedComments.length > 0) {
+      _renderPreloadedComments();
     }
-
-    // Story user data in cookie, so user will not need to reenter it every time
-    $(formRender.selectors.username + ',' +
-      formRender.selectors.email + ',' +
-      formRender.selectors.website, form)
-    .on('input', function(){
-      cookies.set('dlgs-participant', JSON.stringify({
-        name: $(formRender.selectors.username, form).val(),
-        email: $(formRender.selectors.email, form).val(),
-        website: $(formRender.selectors.website, form).val()
-      }), document.location.hostname);
-    });
-
-    $(formRender.placeholderSelectors.button, placeholder)
-      .click(function() {
-        placeholder.hide();
-
-        // Check if this is returned user - just fill the form
-        var author = cookies.get('dlgs-participant');
-        if (author) {
-          author = JSON.parse(author)
-          $(formRender.selectors.username, form).val(author.name),
-          $(formRender.selectors.email, form).val(author.email),
-          $(formRender.selectors.website, form).val(author.website)
-        }
-
-        form.fadeIn();
-        var bottom = form[0].getBoundingClientRect().bottom; 
-        var windowHeight = $(window).height();
-        if (bottom > windowHeight) {
-          $("body").animate({
-            scrollTop: $("body").scrollTop() + (bottom - windowHeight)
-          }, 'slow');
-        }
-        $(formRender.selectors.body, form).focus();
-        _formIsOpened = true;
-        return false;
-      }.bind(this));
-
-    $(formRender.selectors.cancel, form)
-      .click(function() {
-        form.hide();
-        placeholder.fadeIn();
-        $(formRender.selectors.body, form).val('').trigger('input');
-        _formIsOpened = false;
-        return false;
-      }.bind(this));
-
-    $(formRender.selectors.submit, form)
-      .click(function() {
-        
-        var comment = {
-          name: $(formRender.selectors.username, form).val(),
-          website: $(formRender.selectors.website, form).val(),
-          email: $(formRender.selectors.email, form).val(),
-          subscription: $(formRender.selectors.subscription, form).prop('checked') || false,
-          body: $(formRender.selectors.body, form).val()
-        }
-
-        _postComment(comment)
-          .done(function(result) {
-            form.hide();
-            _formIsOpened = false;
-            placeholder.fadeIn();
-            if (_preloadedComments.length > 0) {
-              _renderPreloadedComments();
-            }
-            _renderComments(result);
-            $(formRender.selectors.body, form).val('').trigger('input');
-            _scrollToBottom();
-          }.bind(this))
-          .fail(function(req, error, status) {
-            if (this._options.debug) {
-              console.error('Cannot load comments from server, error: ' + error + ', response: ' + status);
-            }
-            /* TODO: show error to user. */
-          }.bind(this));
-        return false;
-      }.bind(this))
-
-    this.$el.append(placeholder);
-    this.$el.append(form);
-      
-  }.bind(this);
+    commentsView.add(comment);
+    commentsView.scrollToLatest();
+  })
 
   /*
    * Load commentaries from server
@@ -377,10 +197,10 @@ var DialoguesInstance = function (options) {
   this.load = function() {
     return $.getJSON(this._options.server, { id: this._options.id, host: this._options.host }, function(data) {
       this.$el.hide();
-      _renderComments(data);
+      commentsView.add(data);
       
       if (this._options.formRender) {
-        _renderForm();
+        formView = new FormView(options, this.$el);
       }
 
       this.$el.fadeIn();
@@ -394,14 +214,11 @@ var DialoguesInstance = function (options) {
               id: this._options.id
             },
             function(update) {
-              this._commentsContainer.children().each(function() {
-                var id = $(this).data('comment').id;
-                for (var i = (update.comments.length - 1); i >= 0; i--) {
-                  if (update.comments[i].id === id) {
-                    update.comments.splice(i, 1);
-                  }
+              for (var i = (update.comments.length - 1); i >= 0; i--) {
+                if (commentsView.contains(update.comments[i])) {
+                  update.comments.splice(i, 1);
                 }
-              });
+              }
 
               if (_formIsOpened || _preloadedComments.length > 0) {
                 // Push all un rendered comments 
@@ -419,7 +236,7 @@ var DialoguesInstance = function (options) {
                     }.bind(this));
                 }
               } else {
-                _renderComments(update.comments);
+                commentsView.add(update.comments);
               }
             }.bind(this));
         }
