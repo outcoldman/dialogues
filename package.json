@@ -13,7 +13,9 @@
     "url": "git@github.com:outcoldman/dialogues.git"
   },
   "keywords": [
-    "comments", "commentaries", "dialogues"
+    "comments",
+    "commentaries",
+    "dialogues"
   ],
   "homepage": "https://github.com/outcoldman/dialogues",
   "bugs": {
@@ -31,7 +33,9 @@
     "socket.io": "*"
   },
   "devDependencies": {
-    "requirejs": "*"
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-contrib-watch": "~0.5.3"
   },
   "engines": {
     "node": "0.10.x"
