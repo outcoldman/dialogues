@@ -6,29 +6,46 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    jshint: {
-      files: ['Gruntfile.js', 'lib/**/*.js'],
+    jshint: {      
       options: {
-        // options here to override JSHint defaults
-        globals: {
-          console: true,
-          module: true,
-          require: true
-        }
+        node: true
+      },
+      all: [
+        'Gruntfile.js', 
+        'lib/**/*.js'
+      ],
+      tests: {
+        // suppress chai asserts
+        options: {
+          expr: true
+        },
+        src: [ 'test/**/*.js' ]
       }
     },
 
     // Development
     watch: {
-      scripts: {
-        files: 'lib/**/*.js',
-        tasks: ['jshint']
+      dev: {
+        files: ['lib/**/*.js', 'test/**/*.js'],
+        tasks: ['jshint', 'mochaTest:test']
+      }
+    },
+
+    // Tests
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec'
+        },
+        src: ['test/**/*.test.js']
       }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-mocha-test');
 
+  grunt.registerTask('test', ['jshint','mochaTest:test']);
   grunt.registerTask('default', ['watch']);
 };
