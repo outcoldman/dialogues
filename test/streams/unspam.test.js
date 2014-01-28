@@ -1,18 +1,12 @@
 describe('unspam.js', function() { 'use strict';
 
-  var _ = require('underscore');
   var expect = require('chai').expect;
-  var UnspamMiddlewareStream = require('./../../lib/streams/response/unspam');
+  var UnspamMiddlewareStream = require('./../../lib/streams/unspam');
 
   describe('requested instance', function() {
     
     it('is a function', function() {
       expect(UnspamMiddlewareStream).to.be.a('function');
-    });
-
-    it('is a transform stream', function() {
-      var stream = new UnspamMiddlewareStream();
-      expect(stream).to.be.an.instanceof(require('stream').Transform);
     });
 
   });
@@ -25,31 +19,19 @@ describe('unspam.js', function() { 'use strict';
       stream = new UnspamMiddlewareStream({}, {}, {});
     });
 
-    function readFromStream() {
-      var data;
-      while ((data = stream.read()) !== null) {
-         result.push(data);
-      }
-    }
-
     it('does not push spam comments', function() {
-      stream.write({ isSpam: true });
-      stream.end();
+      stream.end({ isSpam: true });
 
-      readFromStream();
-
-      expect(result).to.be.empty;
+      expect(stream.read()).to.be.null;
     });
 
     it('push not spam comments', function() {
       var comment = { isSpam: false };
 
-      stream.write(comment);
-      stream.end();
+      stream.end(comment);
 
-      readFromStream();
-
-      expect(result).to.include.members([comment]);
+      expect(stream.read()).to.equal(comment);
+      expect(stream.read()).to.be.null;
     });
 
     it('filter spam comments', function() {
@@ -59,15 +41,14 @@ describe('unspam.js', function() { 'use strict';
         { isSpam: false }
       ];
 
-      _(comments).each(function(comment) {
+      comments.forEach(function(comment) {
         stream.write(comment);
       });
       stream.end();
 
-      readFromStream();
-
-      var nonSpamComments = _(comments).filter(function(c) { return !c.isSpam; });
-      expect(result).to.include.members(nonSpamComments);
+      expect(stream.read()).to.equal(comments[0]);
+      expect(stream.read()).to.equal(comments[2]);
+      expect(stream.read()).to.be.null;
     });
   });
 });

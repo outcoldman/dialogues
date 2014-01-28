@@ -25,7 +25,8 @@
   "dependencies": {
     "gravatar": "*",
     "underscore": "*",
-    "async": "*"
+    "async": "*",
+    "extendable": "0.0.6"
   },
   "optionalDependencies": {
     "akismet-api": "*",
@@ -38,7 +39,8 @@
     "grunt-contrib-watch": "~0.5.3",
     "mocha": "~1.17.1",
     "grunt-mocha-test": "~0.8.2",
-    "chai": "~1.8.1"
+    "chai": "~1.8.1",
+    "sinon": "~1.7.3"
   },
   "engines": {
     "node": "0.8.x"
