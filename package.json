@@ -25,8 +25,7 @@
   "dependencies": {
     "gravatar": "*",
     "underscore": "*",
-    "async": "*",
-    "extendable": "0.0.6"
+    "async": "*"
   },
   "optionalDependencies": {
     "akismet-api": "*",
