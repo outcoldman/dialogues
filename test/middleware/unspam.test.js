@@ -23,7 +23,7 @@ describe('unspam.js', function() { 'use strict';
       var cb = sinon.spy();
       var comment = { isSpam: true };
 
-      middleware.process({}, {}, comment, cb);
+      middleware.process({}, {}, {}, comment, cb);
 
       expect(cb.calledOnce).to.be.true;
       expect(cb.alwaysCalledWithExactly()).to.be.true;
@@ -33,7 +33,7 @@ describe('unspam.js', function() { 'use strict';
       var cb = sinon.spy();
       var comment = { isSpam: false };
 
-      middleware.process({}, {}, comment, cb);
+      middleware.process({}, {}, {}, comment, cb);
 
       expect(cb.calledOnce).to.be.true;
       expect(cb.alwaysCalledWithExactly(null, comment)).to.be.true;
@@ -46,7 +46,7 @@ describe('unspam.js', function() { 'use strict';
       var comment3 = { isSpam: false };
 
       [comment1, comment2, comment3].forEach(function(comment) {
-        middleware.process({}, {}, comment, cb);
+        middleware.process({}, {}, {}, comment, cb);
       });
 
       expect(cb.calledThrice).to.be.true;

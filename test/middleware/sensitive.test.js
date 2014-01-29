@@ -28,7 +28,7 @@ describe('unspam.js', function() { 'use strict';
         isSpam: ''
       };
 
-      middleware.process({}, {}, comment, cb);
+      middleware.process({}, {}, {}, comment, cb);
 
       expect(cb.calledOnce).to.be.true;
       expect(cb.alwaysCalledWithExactly(null, comment)).to.be.true;
