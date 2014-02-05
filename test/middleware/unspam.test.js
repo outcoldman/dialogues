@@ -1,15 +1,13 @@
-describe('unspam.js', function() { 'use strict';
+describe('middleware/unspam.js', function() { 'use strict';
 
   var expect = require('chai').expect;
   var sinon = require('sinon');
   var UnspamMiddleware = require('./../../lib/middleware/unspam');
 
   describe('requested instance', function() {
-    
     it('is a function', function() {
       expect(UnspamMiddleware).to.be.a('function');
     });
-
   });
 
   describe('UnspamMiddleware', function() {
@@ -19,40 +17,48 @@ describe('unspam.js', function() { 'use strict';
       middleware = new UnspamMiddleware();
     });
 
-    it('does not push spam comments', function() {
-      var cb = sinon.spy();
-      var comment = { isSpam: true };
-
-      middleware.process({}, {}, {}, comment, cb);
-
-      expect(cb.calledOnce).to.be.true;
-      expect(cb.alwaysCalledWithExactly()).to.be.true;
+    it('has process function with 3 arguments', function() {
+      expect(middleware.process.length).to.equal(3);
     });
 
-    it('push not spam comments', function() {
-      var cb = sinon.spy();
-      var comment = { isSpam: false };
+    it('hides spam comments', function() {
+      var data = {
+        comment: { isSpam: true }
+      };
 
-      middleware.process({}, {}, {}, comment, cb);
+      middleware.process({}, {}, data);
 
-      expect(cb.calledOnce).to.be.true;
-      expect(cb.alwaysCalledWithExactly(null, comment)).to.be.true;
+      expect(data.remove).to.be.true;
+    });
+
+    it('does not remove not spam comments', function() {
+      var data = {
+        comment: { isSpam: false }
+      };
+
+      middleware.process({}, {}, data);
+
+      expect(data.remove).to.be.false;
     });
 
     it('filter spam comments', function() {
-      var cb = sinon.spy();
-      var comment1 = { isSpam: false };  
-      var comment2 = { isSpam: true };
-      var comment3 = { isSpam: false };
+      var data1 = {
+        comment: { isSpam: false }
+      };
+      var data2 = {
+        comment: { isSpam: true }
+      };
+      var data3 = {
+        comment: { isSpam: false }
+      };
 
-      [comment1, comment2, comment3].forEach(function(comment) {
-        middleware.process({}, {}, {}, comment, cb);
+      [data1, data2, data3].forEach(function(data) {
+        middleware.process({}, {}, data);
       });
 
-      expect(cb.calledThrice).to.be.true;
-      expect(cb.firstCall.calledWithExactly(null, comment1)).to.be.true;
-      expect(cb.secondCall.calledWithExactly()).to.be.true;
-      expect(cb.thirdCall.calledWithExactly(null, comment3)).to.be.true;
+      expect(data1.remove).to.be.false;
+      expect(data2.remove).to.be.true;
+      expect(data3.remove).to.be.false;
     });
   });
 });

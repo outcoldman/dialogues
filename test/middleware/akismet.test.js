@@ -1,4 +1,4 @@
-describe('unspam.js', function() { 'use strict';
+describe('middleware/unspam.js', function() { 'use strict';
 
   var expect = require('chai').expect;
   var sinon = require('sinon');
@@ -11,7 +11,7 @@ describe('unspam.js', function() { 'use strict';
   });
 
   describe('AkismetMiddleware', function() {
-    var middleware, req, res, comment, dialogue;
+    var middleware, req, res, comment, dialogue, data;
 
     beforeEach(function() {
       middleware = new AkismetMiddleware({ key: 'A', blog: 'B' });
@@ -36,15 +36,23 @@ describe('unspam.js', function() { 'use strict';
       dialogue = {
         permalink: 'http://192.168.1.1/blog/link'
       };
+      data = {
+        comment: comment,
+        dialogue: dialogue,
+        hide: false
+      };
+    });
+
+    it('has process function with 4 arguments', function() {
+      expect(middleware.process.length).to.equal(4);
     });
 
     it('calls checkSpam with right parameters', function() {
       var cb = sinon.spy();
       middleware.client.checkSpam.callsArgWith(1, null, false);
 
-      middleware.process(req, res, dialogue, comment, cb);
+      middleware.process(req, res, data, cb);
 
-      sinon.assert.calledOnce(middleware.client.checkSpam);
       expect(middleware.client.checkSpam.calledOnce).to.be.true;
       expect(middleware.client.checkSpam.firstCall.args[0]).to.deep.equal({
         user_ip: req.userIP,
@@ -63,7 +71,7 @@ describe('unspam.js', function() { 'use strict';
       var cb = sinon.spy();
       middleware.client.checkSpam.callsArgWith(1, null, true);
 
-      middleware.process(req, res, dialogue, comment, cb);
+      middleware.process(req, res, data, cb);
 
       expect(cb.calledOnce).to.be.true;
       expect(cb.alwaysCalledWithExactly(null, comment)).to.be.true;
@@ -75,7 +83,7 @@ describe('unspam.js', function() { 'use strict';
       var cb = sinon.spy();
       middleware.client.checkSpam.callsArgWith(1, null, false);
 
-      middleware.process(req, res, dialogue, comment, cb);
+      middleware.process(req, res, data, cb);
 
       expect(cb.calledOnce).to.be.true;
       expect(cb.alwaysCalledWithExactly(null, comment)).to.be.true;
@@ -87,7 +95,7 @@ describe('unspam.js', function() { 'use strict';
       var err = {};
       middleware.client.checkSpam.callsArgWith(1, err);
 
-      middleware.process(req, res, dialogue, comment, cb);
+      middleware.process(req, res, data, cb);
 
       expect(cb.calledOnce).to.be.true;
       expect(cb.alwaysCalledWithExactly(err)).to.be.true;
