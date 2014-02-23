@@ -118,68 +118,104 @@ describe('middlewareProcessor.js', function() { 'use strict';
     });
 
     it('middleware can remove comment', function(done) {
-        var options = {
-          'out+*': [
-            { custom: './../test/stubs/middlewareStub1' },
-            { custom: './../test/stubs/middlewareStub2' }
-          ]
-        };
+      var options = {
+        'out+*': [
+          { custom: './../test/stubs/middlewareStub1' },
+          { custom: './../test/stubs/middlewareStub2' }
+        ]
+      };
 
-        var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
-        var processor = new MiddlewareProcessor(options);
+      var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
+      var processor = new MiddlewareProcessor(options);
 
-        // Replace process method to remove first comment
-        processor.middleware.out.GET[0].__middleware.process = function(req, res, data) {
-          if (data.comment === comments[0]) {
-            data.remove = true;
-          }
-        };
+      // Replace process method to remove first comment
+      processor.middleware.out.GET[0].__middleware.process = function(req, res, data) {
+        if (data.comment === comments[0]) {
+          data.remove = true;
+        }
+      };
 
-        processor.out(req, res, dialogue, comments, function(err, result) {
-          expect(err).to.be.null;
-          expect(result).to.deep.equal([comments[1]]);
+      processor.out(req, res, dialogue, comments, function(err, result) {
+        expect(err).to.be.null;
+        expect(result).to.deep.equal([comments[1]]);
 
-          var middlewareStub1 = processor.middleware.out.GET[0].__middleware._stub;
-          var middlewareStub2 = processor.middleware.out.GET[1].__middleware._stub;
+        var middlewareStub1 = processor.middleware.out.GET[0].__middleware._stub;
+        var middlewareStub2 = processor.middleware.out.GET[1].__middleware._stub;
 
-          function matchSecondComment(data) { return data.comment === comments[1] && data.dialogue === dialogue; }
+        function matchSecondComment(data) { return data.comment === comments[1] && data.dialogue === dialogue; }
 
-          expect(middlewareStub2.calledOnce).to.be.true;
-          expect(middlewareStub2.firstCall.calledWithExactly(req, res, sinon.match(matchSecondComment))).to.be.true;
+        expect(middlewareStub2.calledOnce).to.be.true;
+        expect(middlewareStub2.firstCall.calledWithExactly(req, res, sinon.match(matchSecondComment))).to.be.true;
 
-          done();
-        });
+        done();
       });
+    });
 
-      it('middleware can return errors', function(done) {
-        var options = {
-          'out+*': [
-            { custom: './../test/stubs/middlewareStub3Async' },
-            { custom: './../test/stubs/middlewareStub2' }
-          ]
-        };
+    it('middleware can return errors', function(done) {
+      var options = {
+        'out+*': [
+          { custom: './../test/stubs/middlewareStub3Async' },
+          { custom: './../test/stubs/middlewareStub2' }
+        ]
+      };
 
-        var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
-        var processor = new MiddlewareProcessor(options);
+      var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
+      var processor = new MiddlewareProcessor(options);
 
-        var error = {};
+      var error = {};
 
-        processor.middleware.out.GET[0].__middleware.process = function(req, res, data, cb) {
-          cb(error);
-        };
+      processor.middleware.out.GET[0].__middleware.process = function(req, res, data, cb) {
+        cb(error);
+      };
 
-        processor.out(req, res, dialogue, comments, function(err, result) {
-          expect(err).to.equal(error);
-          expect(result).to.be.undefined;
+      processor.out(req, res, dialogue, comments, function(err, result) {
+        expect(err).to.equal(error);
+        expect(result).to.be.undefined;
 
-          var middlewareStub1 = processor.middleware.out.GET[0].__middleware._stub;
-          var middlewareStub2 = processor.middleware.out.GET[1].__middleware._stub;
+        var middlewareStub1 = processor.middleware.out.GET[0].__middleware._stub;
+        var middlewareStub2 = processor.middleware.out.GET[1].__middleware._stub;
 
-          expect(middlewareStub2.called).to.be.false;
+        expect(middlewareStub2.called).to.be.false;
 
-          done();
-        });
+        done();
       });
+    });
+
+    it('middleware returns array on array input', function(done) {
+      var options = {
+        'out+*': [
+          { custom: './../test/stubs/middlewareStub1' }
+        ]
+      };
+
+      var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
+      var processor = new MiddlewareProcessor(options);
+
+      processor.out(req, res, dialogue, comments, function(err, result) {
+        expect(err).to.be.null;
+        expect(result).to.deep.equal(comments);
+        
+        done();
+      });
+    });
+
+    it('middleware returns object on object input', function(done) {
+      var options = {
+        'out+*': [
+          { custom: './../test/stubs/middlewareStub1' }
+        ]
+      };
+
+      var req = { method: 'GET' }, res = {}, dialogue = {}, comment = {};
+      var processor = new MiddlewareProcessor(options);
+
+      processor.out(req, res, dialogue, comment, function(err, result) {
+        expect(err).to.be.null;
+        expect(result).to.deep.equal(comment);
+
+        done();
+      });
+    });
 
     describe('verb middleware', function() {
       _(['GET', 'PUT', 'POST', 'DELETE']).each(function(verb) {
