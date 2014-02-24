@@ -125,7 +125,7 @@ describe('middlewareProcessor.js', function() { 'use strict';
         ]
       };
 
-      var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
+      var req = { method: 'GET' }, res = {}, comments = [ {}, {} ];
       var processor = new MiddlewareProcessor(options);
 
       // Replace process method to remove first comment
@@ -135,14 +135,14 @@ describe('middlewareProcessor.js', function() { 'use strict';
         }
       };
 
-      processor.out(req, res, dialogue, comments, function(err, result) {
+      processor.out(req, res, comments, function(err, result) {
         expect(err).to.be.null;
         expect(result).to.deep.equal([comments[1]]);
 
         var middlewareStub1 = processor.middleware.out.GET[0].__middleware._stub;
         var middlewareStub2 = processor.middleware.out.GET[1].__middleware._stub;
 
-        function matchSecondComment(data) { return data.comment === comments[1] && data.dialogue === dialogue; }
+        function matchSecondComment(data) { return data.comment === comments[1]; }
 
         expect(middlewareStub2.calledOnce).to.be.true;
         expect(middlewareStub2.firstCall.calledWithExactly(req, res, sinon.match(matchSecondComment))).to.be.true;
@@ -159,7 +159,7 @@ describe('middlewareProcessor.js', function() { 'use strict';
         ]
       };
 
-      var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
+      var req = { method: 'GET' }, res = {}, comments = [ {}, {} ];
       var processor = new MiddlewareProcessor(options);
 
       var error = {};
@@ -168,7 +168,7 @@ describe('middlewareProcessor.js', function() { 'use strict';
         cb(error);
       };
 
-      processor.out(req, res, dialogue, comments, function(err, result) {
+      processor.out(req, res, comments, function(err, result) {
         expect(err).to.equal(error);
         expect(result).to.be.undefined;
 
@@ -188,10 +188,10 @@ describe('middlewareProcessor.js', function() { 'use strict';
         ]
       };
 
-      var req = { method: 'GET' }, res = {}, dialogue = {}, comments = [ {}, {} ];
+      var req = { method: 'GET' }, res = {}, comments = [ {}, {} ];
       var processor = new MiddlewareProcessor(options);
 
-      processor.out(req, res, dialogue, comments, function(err, result) {
+      processor.out(req, res, comments, function(err, result) {
         expect(err).to.be.null;
         expect(result).to.deep.equal(comments);
         
@@ -206,10 +206,10 @@ describe('middlewareProcessor.js', function() { 'use strict';
         ]
       };
 
-      var req = { method: 'GET' }, res = {}, dialogue = {}, comment = {};
+      var req = { method: 'GET' }, res = {}, comment = {};
       var processor = new MiddlewareProcessor(options);
 
-      processor.out(req, res, dialogue, comment, function(err, result) {
+      processor.out(req, res, comment, function(err, result) {
         expect(err).to.be.null;
         expect(result).to.deep.equal(comment);
 
@@ -219,12 +219,11 @@ describe('middlewareProcessor.js', function() { 'use strict';
 
     describe('verb middleware', function() {
       _(['GET', 'PUT', 'POST', 'DELETE']).each(function(verb) {
-        var processor, options, req, res, dialogue, comments;
+        var processor, options, req, res, comments;
 
         beforeEach(function() {
           req = { method: verb };
           res = {};
-          dialogue = {};
           comments = [ {}, {} ];
 
           options = {
@@ -250,7 +249,7 @@ describe('middlewareProcessor.js', function() { 'use strict';
         });
 
         it('calls all middleware on ' + verb + ' in call', function(done) {
-          processor.in(req, res, dialogue, comments, function(err, result) {
+          processor.in(req, res, comments, function(err, result) {
             expect(err).to.be.null;
             expect(result).to.deep.equal(comments);
 
@@ -269,8 +268,8 @@ describe('middlewareProcessor.js', function() { 'use strict';
             // CalledTwice but secondCall is null - looks like bug in sinon
             // expect(middlewareStub3.secondCall.calledAfter(middlewareStub2.secondCall)).to.be.true;
 
-            function matchFirstComment(data) { return data.comment === comments[0] && data.dialogue === dialogue; }
-            function matchSecondComment(data) { return data.comment === comments[1] && data.dialogue === dialogue; }
+            function matchFirstComment(data) { return data.comment === comments[0]; }
+            function matchSecondComment(data) { return data.comment === comments[1]; }
 
             expect(middlewareStub1.firstCall.calledWithExactly(req, res, sinon.match(matchFirstComment))).to.be.true;
             expect(middlewareStub1.secondCall.calledWithExactly(req, res, sinon.match(matchSecondComment))).to.be.true;
@@ -285,7 +284,7 @@ describe('middlewareProcessor.js', function() { 'use strict';
         });
 
         it('calls all middleware on ' + verb + ' out call', function(done) {
-          processor.out(req, res, dialogue, comments, function(err, result) {
+          processor.out(req, res, comments, function(err, result) {
             expect(err).to.be.null;
             expect(result).to.deep.equal(comments);
 
@@ -304,8 +303,8 @@ describe('middlewareProcessor.js', function() { 'use strict';
             // CalledTwice but secondCall is null - looks like bug in sinon
             // expect(middlewareStub3.secondCall.calledAfter(middlewareStub2.secondCall)).to.be.true;
 
-            function matchFirstComment(data) { return data.comment === comments[0] && data.dialogue === dialogue; }
-            function matchSecondComment(data) { return data.comment === comments[1] && data.dialogue === dialogue; }
+            function matchFirstComment(data) { return data.comment === comments[0]; }
+            function matchSecondComment(data) { return data.comment === comments[1]; }
 
             expect(middlewareStub1.firstCall.calledWithExactly(req, res, sinon.match(matchFirstComment))).to.be.true;
             expect(middlewareStub1.secondCall.calledWithExactly(req, res, sinon.match(matchSecondComment))).to.be.true;

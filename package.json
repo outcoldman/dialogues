@@ -25,8 +25,7 @@
   "dependencies": {
     "gravatar": "*",
     "underscore": "*",
-    "async": "*",
-    "JSONStream": "~0.7.1"
+    "async": "*"
   },
   "optionalDependencies": {
     "akismet-api": "*",

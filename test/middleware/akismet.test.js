@@ -11,7 +11,7 @@ describe('middleware/unspam.js', function() { 'use strict';
   });
 
   describe('AkismetMiddleware', function() {
-    var middleware, req, res, comment, dialogue, data;
+    var middleware, req, res, comment, data;
 
     beforeEach(function() {
       middleware = new AkismetMiddleware({ key: 'A', blog: 'B' });
@@ -33,12 +33,8 @@ describe('middleware/unspam.js', function() { 'use strict';
         body: 'body-value'
       };
       res = {};
-      dialogue = {
-        permalink: 'http://192.168.1.1/blog/link'
-      };
       data = {
         comment: comment,
-        dialogue: dialogue,
         hide: false
       };
     });
@@ -58,7 +54,6 @@ describe('middleware/unspam.js', function() { 'use strict';
         user_ip: req.userIP,
         user_agent: comment.userAgent,
         referrer: req.headers.referer,
-        permalink: dialogue.permalink,
         comment_type: middleware.options.commentType,
         comment_author: comment.name,
         comment_author_email: comment.email,
